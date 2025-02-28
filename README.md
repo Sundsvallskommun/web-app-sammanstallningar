@@ -1,12 +1,13 @@
-# Projektnamn
+# AI-sammanställningar
 
 ## APIer som används
 
 Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa. Systemet utgår ifrån /backend/api-config.ts där dessa står specificerade.
 
 | API             | Version |
-| --------------- | ------: |
+|-----------------| ------: |
 | SimulatorServer |     2.0 |
+| AiFlow          |     2.0 |
 
 ## Utveckling
 
@@ -17,13 +18,7 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 
 ### Steg för steg
 
-1. Klona ner repot till en mapp "<web-app-projektnamn>" och skapa nytt git repo
-
-```
-npx tiged --mode=git git@github.com:Sundsvallskommun/web-app-starter.git <web-app-projektnamn>
-cd <web-app-projektnamn>
-git init
-```
+1. Klona ner repot till en mapp ""
 
 2. Installera dependencies för både `backend` och `frontend`
 
