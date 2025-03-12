@@ -2,6 +2,7 @@ import { HttpException } from '@/exceptions/HttpException';
 import { apiURL } from '@/utils/util';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import ApiTokenService from './api-token.service';
+import { User } from '@interfaces/users.interface';
 
 class ApiResponse<T> {
   data: T;
@@ -10,7 +11,7 @@ class ApiResponse<T> {
 
 class ApiService {
   private apiTokenService = new ApiTokenService();
-  private async request<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  private async request<T>(config: AxiosRequestConfig, user: User): Promise<ApiResponse<T>> {
     const token = await this.apiTokenService.getToken();
 
     const defaultHeaders = {
@@ -38,20 +39,20 @@ class ApiService {
     }
   }
 
-  public async get<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'GET' });
+  public async get<T>(config: AxiosRequestConfig, user: User): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'GET' }, user);
   }
 
-  public async post<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'POST' });
+  public async post<T>(config: AxiosRequestConfig, user: User): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'POST' }, user);
   }
 
-  public async patch<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PATCH' });
+  public async patch<T>(config: AxiosRequestConfig, user: User): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'PATCH' }, user);
   }
 
-  public async delete<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'DELETE' });
+  public async delete<T>(config: AxiosRequestConfig, user: User): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'DELETE' }, user);
   }
 }
 

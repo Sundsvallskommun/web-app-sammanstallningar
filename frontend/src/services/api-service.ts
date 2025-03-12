@@ -2,7 +2,7 @@ import axios from 'axios';
 import Router from 'next/router';
 import { apiURL } from '@utils/api-url';
 
-export interface ApiResponse<T = unknown> {
+export interface ApiResponse<T> {
   data: T;
   message: string;
 }
