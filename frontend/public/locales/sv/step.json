@@ -1,0 +1,29 @@
+{
+  "flow_picker": {
+    "label": "Välj typ",
+    "title" : "Välj typ av dokument att sammanställa",
+    "description" : "Eventuell beskrivning"
+  },
+  "input_handler" : {
+    "label" : "Lägg till uppgifter",
+    "title" : "Lägg till uppgifter för {{flow}}",
+    "description" : "Eventuell beskrivning",
+    "generate" : "Generera {{flow}}",
+    "help_text": "Hjälptext för input handler"
+  },
+  "compiler" : {
+    "label" : "Sammanställ",
+    "title" : "Sammanställ delar av {{flow}}",
+    "save" : "Spara dokument",
+    "help_text" : "Hjälptext för compiler"
+  },
+  "document_generator" : {
+    "label" : "Spara dokument",
+    "title" : "Spara dokument för {{flow}}",
+    "description" : "Ditt dokument sparas på din dator. Eftersom stora delar av innehållet är automatiskt sammanställt med AI är du skyldig att granska dokumentet manuellt. Om inte nedladdningen startar automatiskt kan du trycka på knappen för att ladda ner dokumentet.",
+    "attest_description" : "Jag intygar att jag granskar och godkänner dokumentet manuellt innan det används",
+    "download" : "Ladda ner {{flow}}",
+    "new" : "Sammanställ en till skrivelse"
+  },
+  "go_back" : "Gå tillbaka"
+}

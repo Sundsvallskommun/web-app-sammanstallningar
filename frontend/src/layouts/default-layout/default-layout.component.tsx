@@ -1,4 +1,4 @@
-import { CookieConsent, Footer, Header, Link } from '@sk-web-gui/react';
+import { CookieConsent, Footer, Header, Link, Logo } from '@sk-web-gui/react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
@@ -42,35 +42,41 @@ export default function DefaultLayout({
 
   return (
     <div className="DefaultLayout full-page-layout">
-      <Head>
-        <title>{title ? title : fullTitle}</title>
-        <meta name="description" content={`${process.env.NEXT_PUBLIC_APP_NAME}`} />
-      </Head>
+      <div className="z-40 shadow-100">
+        <Head>
+          <title>{title ? title : fullTitle}</title>
+          <meta name="description" content={`${process.env.NEXT_PUBLIC_APP_NAME}`} />
+        </Head>
 
-      <NextLink href="#content" legacyBehavior passHref>
-        <a onClick={setFocusToMain} accessKey="s" className="next-link-a" data-cy="systemMessage-a">
-          {t('layout:header.goto_content')}
-        </a>
-      </NextLink>
+        <NextLink href="#content" legacyBehavior passHref>
+          <a onClick={setFocusToMain} accessKey="s" className="next-link-a" data-cy="systemMessage-a">
+            {t('layout:header.goto_content')}
+          </a>
+        </NextLink>
 
-      <Header
-        data-cy="nav-header"
-        title={headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME}
-        subtitle={headerSubtitle ? headerSubtitle : ''}
-        aria-label={`${headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME} ${headerSubtitle}`}
-        logoLinkOnClick={handleLogoClick}
-        LogoLinkWrapperComponent={<NextLink legacyBehavior href={logoLinkHref} passHref />}
-      />
+        <Header
+          data-cy="nav-header"
+          title={headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME}
+          subtitle="Sundsvalls kommun"
+          aria-label={`${headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME} ${headerSubtitle}`}
+          logoLinkOnClick={handleLogoClick}
+          LogoLinkWrapperComponent={<NextLink legacyBehavior href={logoLinkHref} passHref />}
+        />
+      </div>
 
       {preContent && preContent}
 
-      <div className={`main-container flex-grow relative w-full flex flex-col`}>
-        <div className="main-content-padding">{children}</div>
-      </div>
+      <div className="flex-grow relative w-full flex flex-col">{children}</div>
 
       {postContent && postContent}
 
-      <Footer></Footer>
+      <Footer className="bg-inverted-black justify-start">
+        <Footer.Content>
+          <Footer.LogoWrapper>
+            <Logo aria-label="Sundsvalls kommun logotyp" inverted />
+          </Footer.LogoWrapper>
+        </Footer.Content>
+      </Footer>
 
       <CookieConsent
         title={t('layout:cookies.title', { app: process.env.NEXT_PUBLIC_APP_NAME })}
