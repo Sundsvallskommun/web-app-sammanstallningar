@@ -1,8 +1,7 @@
 import React from 'react';
 import { useFlows } from '@services/flow-service/use-flows';
-import { Card } from '@sk-web-gui/react';
+import { Card, useSnackbar } from '@sk-web-gui/react';
 import { getFlow, useFlowStore } from '@services/flow-service/flow-service';
-import { Flow } from '@data-contracts/backend/data-contracts';
 import { useSession } from '@services/session-service/use-session';
 import { useTranslation } from 'next-i18next';
 
@@ -14,6 +13,7 @@ interface FlowPickerProps {
 export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   const { handleChangeStep, currentStep } = props;
   const { t } = useTranslation();
+  const toastMessage = useSnackbar();
 
   const { flows } = useFlows();
   const { setFlow } = useFlowStore();
@@ -22,10 +22,22 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   const handleFlowPick = (name: string, version: number) => {
     if (name && version) {
       getFlow(name, version)
-        .then((res) => res && setFlow(res as Flow))
-        .then(() => refreshSession(undefined, name, version));
+        .then((res) => {
+          res && setFlow(res);
+        })
+        .then(() => {
+          refreshSession(undefined, name, version);
+          handleChangeStep(currentStep + 1);
+        })
+        .catch(() => {
+          toastMessage({
+            position: 'bottom',
+            closeable: true,
+            message: t('step:flow_picker.error'),
+            status: 'error',
+          });
+        });
     }
-    handleChangeStep(currentStep + 1);
   };
 
   return (
