@@ -1,10 +1,11 @@
 import ApiService from '@services/api.service';
 import { Body, Controller, Get, Param, Post, Req, Res } from 'routing-controllers';
-import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { OpenAPI } from 'routing-controllers-openapi';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import { apiURL } from '@utils/util';
 import { Input, Session, StepExecution } from '@/data-contracts/aiflow/data-contracts';
 import { MUNICIPALITY_ID } from '@config';
+import { RenderRequest } from '@/responses/flow.response';
+import ApiResponse from '@interfaces/api-service.interface';
 
 interface ResponseData<T> {
   data: T;
@@ -63,6 +64,7 @@ export class SessionController {
 
   @Get('/session/:sessionId/:stepId')
   @OpenAPI({ summary: 'Get a step execution' })
+  // @UseBefore(authMiddleware)
   async getStepExecution(
     @Req() req: RequestWithUser,
     @Param('sessionId') sessionId: string,
@@ -71,5 +73,18 @@ export class SessionController {
     const url = `${this.baseUrl}/session/${sessionId}/${stepId}`;
     const res = await this.apiService.get<StepExecution>({ url }, req.user);
     return { data: res.data, message: 'success' };
+  }
+
+  @Post('/session/generate/:sessionId/generate')
+  @OpenAPI({ summary: 'Generate document' })
+  // @UseBefore(authMiddleware)
+  async generateDocument(
+    @Req() req: RequestWithUser,
+    @Param('sessionId') sessionId: string,
+    @Body() data: RenderRequest,
+  ): Promise<ResponseData<string>> {
+    const url = `${this.baseUrl}/session/${sessionId}/generate`;
+    const res = await this.apiService.post<ApiResponse<string>>({ url, data }, req.user);
+    return { data: res.data.data, message: 'success' };
   }
 }

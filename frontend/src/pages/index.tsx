@@ -5,6 +5,9 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { FormStepper } from '@components/form-stepper/form-stepper.component';
 import { useState } from 'react';
 import { FlowPicker } from '@components/flow-picker/flow-picker.component';
+import { InputHandler } from '@components/input-handler/input-handler.component';
+import { Compiler } from '@components/compiler/compiler.component';
+import { DocumentGenerator } from '@components/document-generator/document-generator.component';
 
 export function Index() {
   const { t } = useTranslation();
@@ -26,17 +29,17 @@ export function Index() {
             },
             {
               label: t('step:input_handler.label'),
-              component: <></>,
+              component: <InputHandler currentStep={currentStep} handleChangeStep={handleChangeStep} />,
               valid: true,
             },
             {
               label: t('step:compiler.label'),
-              component: <></>,
+              component: <Compiler currentStep={currentStep} handleChangeStep={handleChangeStep} />,
               valid: true,
             },
             {
               label: t('step:document_generator.label'),
-              component: <></>,
+              component: <DocumentGenerator currentStep={currentStep} handleChangeStep={handleChangeStep} />,
               valid: true,
             },
           ]}

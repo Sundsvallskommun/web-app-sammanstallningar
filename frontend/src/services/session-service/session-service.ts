@@ -1,7 +1,8 @@
 import { ApiResponse, apiService } from '@services/api-service';
-import { Input, Session, StepExecution } from '@data-contracts/backend/data-contracts';
+import { Session, StepExecution } from '@data-contracts/backend/data-contracts';
 import { create } from 'zustand';
-import { step } from 'next/dist/experimental/testmode/playwright/step';
+import { fileToBase64 } from '@utils/toBase64';
+import { UploadFile } from '@sk-web-gui/react';
 
 export const getSession: (sessionId: string) => Promise<Session> = (sessionId) => {
   return apiService
@@ -10,7 +11,7 @@ export const getSession: (sessionId: string) => Promise<Session> = (sessionId) =
       return res.data.data;
     })
     .catch((e) => {
-      console.error('Something went wrong when fetching session');
+      console.error('Something went wrong when fetching session', e);
       return {} as Session;
     });
 };
@@ -27,16 +28,68 @@ export const createSession: (flowName: string, flowVersion: number) => Promise<S
     });
 };
 
-export const addSessionInput: (sessionId: string, inputData: Input) => Promise<Session> = (sessionId, inputData) => {
-  return apiService
-    .post<ApiResponse<Session>>(`session/${sessionId}`, inputData)
-    .then((res) => {
-      return res.data.data;
-    })
-    .catch((e) => {
-      console.error('Something went wrong when adding session input');
-      throw e;
-    });
+export const addSessionInput: (
+  sessionId: string,
+  inputData: {
+    attachmentInput: { [key: string]: UploadFile[] };
+    textInput: { [key: string]: string };
+    stringInput: { [key: string]: string };
+  }
+) => Promise<boolean> = async (
+  sessionId,
+  inputData: {
+    attachmentInput: { [key: string]: UploadFile[] };
+    textInput: { [key: string]: string };
+    stringInput: { [key: string]: string };
+  }
+) => {
+  if (!sessionId) {
+    return Promise.reject('No session id found');
+  }
+
+  const stringInputPromises = Object.entries(inputData.stringInput).map(async ([key, value]) => {
+    if (value.length) {
+      try {
+        await apiService.post<ApiResponse<Session>>(`session/${sessionId}`, { inputId: key, value: btoa(value) });
+        return true;
+      } catch (e) {
+        console.error('Something went wrong');
+      }
+    } else {
+      return null;
+    }
+  });
+
+  const textInputPromises = Object.entries(inputData.textInput).map(async ([key, value]) => {
+    if (value.length) {
+      try {
+        await apiService.post<ApiResponse<Session>>(`session/${sessionId}`, { inputId: key, value: btoa(value) });
+        return true;
+      } catch (e) {
+        console.error('Something went wrong');
+      }
+    } else {
+      return null;
+    }
+  });
+
+  const attachmentInputPromises = Object.entries(inputData.attachmentInput).map(async ([key, value]) => {
+    if (value.length) {
+      try {
+        const fileData = await fileToBase64(value[0].file);
+        await apiService.post<ApiResponse<Session>>(`session/${sessionId}`, { inputId: key, value: fileData });
+        return true;
+      } catch (e) {
+        console.error('Something went wrong');
+      }
+    } else {
+      return null;
+    }
+  });
+
+  return Promise.all([...stringInputPromises, ...textInputPromises, ...attachmentInputPromises]).then((results) =>
+    results.every((r) => r)
+  );
 };
 
 export const runStep: (sessionId: string, stepId: string) => Promise<StepExecution> = (sessionId, stepId) => {
@@ -59,6 +112,18 @@ export const getStepExecution: (sessionId: string, stepId: string) => Promise<St
     })
     .catch((e) => {
       console.error('Something went wrong when getting step execution');
+      throw e;
+    });
+};
+
+export const generateDocument: (sessionId: string, templateId: string) => Promise<string> = (sessionId, templateId) => {
+  return apiService
+    .post<ApiResponse<string>>(`session/generate/${sessionId}/generate`, { templateId: templateId })
+    .then((res) => {
+      return res.data.data;
+    })
+    .catch((e) => {
+      console.error('Something went wrong when generating document');
       throw e;
     });
 };

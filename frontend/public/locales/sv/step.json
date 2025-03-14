@@ -2,12 +2,12 @@
   "flow_picker": {
     "label": "Välj typ",
     "title" : "Välj typ av dokument att sammanställa",
-    "description" : "Eventuell beskrivning"
+    "description" : "Välj vilken typ av dokument du vill sammanställa",
+    "error" : "Något gick fel när flödet skulle hämtas"
   },
   "input_handler" : {
     "label" : "Lägg till uppgifter",
     "title" : "Lägg till uppgifter för {{flow}}",
-    "description" : "Eventuell beskrivning",
     "generate" : "Generera {{flow}}",
     "help_text": "Hjälptext för input handler"
   },
@@ -15,15 +15,20 @@
     "label" : "Sammanställ",
     "title" : "Sammanställ delar av {{flow}}",
     "save" : "Spara dokument",
-    "help_text" : "Hjälptext för compiler"
+    "help_text" : "Hjälptext för compiler",
+    "generating_data" : "Genererar data, detta kan ta en stund...",
+    "generate_again" : "Generera om",
+    "generate_again_placeholder" : "Kort instruktion (förkorta, förläng, undvik, lägg till ord, del, stycke om...)",
+    "error" : "Något gick fel vid sammanställningen"
   },
   "document_generator" : {
     "label" : "Spara dokument",
     "title" : "Spara dokument för {{flow}}",
     "description" : "Ditt dokument sparas på din dator. Eftersom stora delar av innehållet är automatiskt sammanställt med AI är du skyldig att granska dokumentet manuellt. Om inte nedladdningen startar automatiskt kan du trycka på knappen för att ladda ner dokumentet.",
     "attest_description" : "Jag intygar att jag granskar och godkänner dokumentet manuellt innan det används",
-    "download" : "Ladda ner {{flow}}",
-    "new" : "Sammanställ en till skrivelse"
+    "download" : "Ladda ner {{flow}}.docx",
+    "new" : "Sammanställ en till skrivelse",
+    "error" : "Något fick fel vid generering av dokument"
   },
   "go_back" : "Gå tillbaka"
 }
