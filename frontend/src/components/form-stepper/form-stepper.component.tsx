@@ -31,8 +31,8 @@ export const FormStepper: React.FC<FormStepperProps> = (props) => {
         </div>
       </div>
 
-      <div className="shadow-100 pb-80">
-        <div className="mx-auto container py-32 lg:px-80 xl:px-80 2xl:px-0">{steps[currentStep].component}</div>
+      <div className="shadow-100 min-h-[90rem]">
+        <div className="mx-auto container py-32 xl:px-80 lg:px-80 px-16">{steps[currentStep].component}</div>
       </div>
     </div>
   );

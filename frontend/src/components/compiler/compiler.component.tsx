@@ -105,7 +105,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                     </div>
                   : <p>{t('step:compiler.generating_data')}</p>}
                 </Disclosure>
-                <Divider />
+                {index < flow.steps.length - 1 && <Divider />}
               </div>
             );
           })}

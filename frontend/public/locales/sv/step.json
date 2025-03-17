@@ -16,7 +16,7 @@
     "title" : "Sammanställ delar av {{flow}}",
     "save" : "Spara dokument",
     "help_text" : "Hjälptext för compiler",
-    "generating_data" : "Genererar data, detta kan ta en stund...",
+    "generating_data" : "Genererar del, detta kan ta en stund...",
     "generate_again" : "Generera om",
     "generate_again_placeholder" : "Kort instruktion (förkorta, förläng, undvik, lägg till ord, del, stycke om...)",
     "error" : "Något gick fel vid sammanställningen"
