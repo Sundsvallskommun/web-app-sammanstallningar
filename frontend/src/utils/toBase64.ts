@@ -1,3 +1,5 @@
+import { Output } from '@data-contracts/backend/data-contracts';
+
 export const fileToBase64 = async (file: File): Promise<string> => {
   try {
     const reader = new FileReader();
@@ -18,9 +20,9 @@ export const fileToBase64 = async (file: File): Promise<string> => {
   }
 };
 
-export function downloadBase64File(base64Data: string, fileName: string) {
+export function downloadBase64File(base64Data: Output, fileName: string) {
   // Create a Blob from the base64-encoded data
-  const byteCharacters = atob(base64Data);
+  const byteCharacters = atob(base64Data.data);
   const byteNumbers = new Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
     byteNumbers[i] = byteCharacters.charCodeAt(i);

@@ -1,11 +1,11 @@
 import ApiService from '@services/api.service';
-import { Body, Controller, Get, Param, Post, Req, Res } from 'routing-controllers';
+import { Body, Controller, Get, Param, Post, Req, Res, UploadedFiles } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import { Input, Session, StepExecution } from '@/data-contracts/aiflow/data-contracts';
+import { ChatRequest, CreateSessionRequest, Output, Session, SimpleInput, StepExecution } from '@/data-contracts/aiflow/data-contracts';
 import { MUNICIPALITY_ID } from '@config';
 import { RenderRequest } from '@/responses/flow.response';
-import ApiResponse from '@interfaces/api-service.interface';
+const FormData = require('form-data');
 
 interface ResponseData<T> {
   data: T;
@@ -17,17 +17,12 @@ export class SessionController {
   private apiService = new ApiService();
   private baseUrl = `aiflow/2.0/${MUNICIPALITY_ID}`;
 
-  @Post('/session/:flowName/:version')
+  @Post('/session')
   @OpenAPI({ summary: 'Create a session' })
   // @UseBefore(authMiddleware)
-  async createSession(
-    @Req() req: RequestWithUser,
-    @Res() response: Session,
-    @Param('flowName') flowName: string,
-    @Param('version') version: number,
-  ): Promise<ResponseData<Session>> {
-    const url = `${this.baseUrl}/session/${flowName}/${version}`;
-    const res = await this.apiService.post<Session>({ url }, req.user);
+  async createSession(@Req() req: RequestWithUser, @Res() response: Session, @Body() data: CreateSessionRequest): Promise<ResponseData<Session>> {
+    const url = `${this.baseUrl}/session`;
+    const res = await this.apiService.post<Session, CreateSessionRequest>({ url, data }, req.user);
     return { data: res.data, message: 'success' };
   }
 
@@ -40,29 +35,62 @@ export class SessionController {
     return { data: res.data, message: 'success' };
   }
 
-  @Post('/session/:sessionId')
-  @OpenAPI({ summary: 'Add session input' })
+  @Post('/session/:sessionId/input/:inputId/simple')
+  @OpenAPI({ summary: 'Add session text input' })
   // @UseBefore(authMiddleware)
-  async addSessionInput(@Req() req: RequestWithUser, @Param('sessionId') sessionId: string, @Body() data: Input): Promise<ResponseData<Session>> {
-    const url = `${this.baseUrl}/session/${sessionId}`;
-    const res = await this.apiService.post<Session>({ url, data }, req.user);
+  async addSessionTextInput(
+    @Req() req: RequestWithUser,
+    @Param('sessionId') sessionId: string,
+    @Param('inputId') inputId: string,
+    @Body() data: SimpleInput,
+  ): Promise<ResponseData<Session>> {
+    const url = `${this.baseUrl}/session/${sessionId}/input/${inputId}/simple`;
+    const res = await this.apiService.post<Session, SimpleInput>({ url, data }, req.user);
     return { data: res.data, message: 'success' };
   }
 
-  @Post('/session/run/:sessionId/:stepId')
+  @Post('/session/:sessionId/input/:inputId/file')
+  @OpenAPI({ summary: 'Add session file input' })
+  // @UseBefore(authMiddleware)
+  async addSessionFileInput(
+    @Req() req: RequestWithUser,
+    @Param('sessionId') sessionId: string,
+    @UploadedFiles('files') files: Express.Multer.File[],
+    @Param('inputId') inputId: string,
+  ): Promise<ResponseData<Session>> {
+    const data = new FormData();
+    data.append('file', files[0].buffer, { filename: files[0].originalname });
+
+    const url = `${this.baseUrl}/session/${sessionId}/input/${inputId}/file`;
+    const res = await this.apiService.post<Session, FormData>({ url, data, headers: { 'Content-Type': 'multipart/form-data' } }, req.user);
+
+    return { data: res.data, message: 'success' };
+  }
+
+  @Post('/session/:sessionId')
+  @OpenAPI({ summary: 'Run all steps in a session' })
+  // @UseBefore(authMiddleware)
+  async runAllSteps(@Req() req: RequestWithUser, @Param('sessionId') sessionId: string): Promise<ResponseData<number>> {
+    const url = `${this.baseUrl}/session/${sessionId}`;
+    const res = await this.apiService.post<number, null>({ url }, req.user);
+    return { data: res.data, message: 'success' };
+  }
+
+  @Post('/session/:sessionId/step/:stepId')
   @OpenAPI({ summary: 'Run a step in a session' })
   // @UseBefore(authMiddleware)
   async runStep(
     @Req() req: RequestWithUser,
     @Param('sessionId') sessionId: string,
     @Param('stepId') stepId: string,
-  ): Promise<ResponseData<StepExecution>> {
-    const url = `${this.baseUrl}/session/run/${sessionId}/${stepId}`;
-    const res = await this.apiService.post<StepExecution>({ url }, req.user);
+    @Body() data: ChatRequest,
+  ): Promise<ResponseData<number>> {
+    const url = `${this.baseUrl}/session/${sessionId}/step/${stepId}`;
+    const res = await this.apiService.post<number, ChatRequest>({ url, data }, req.user);
     return { data: res.data, message: 'success' };
   }
 
-  @Get('/session/:sessionId/:stepId')
+  @Get('/session/:sessionId/step/:stepId')
   @OpenAPI({ summary: 'Get a step execution' })
   // @UseBefore(authMiddleware)
   async getStepExecution(
@@ -70,21 +98,21 @@ export class SessionController {
     @Param('sessionId') sessionId: string,
     @Param('stepId') stepId: string,
   ): Promise<ResponseData<StepExecution>> {
-    const url = `${this.baseUrl}/session/${sessionId}/${stepId}`;
+    const url = `${this.baseUrl}/session/${sessionId}/step/${stepId}`;
     const res = await this.apiService.get<StepExecution>({ url }, req.user);
     return { data: res.data, message: 'success' };
   }
 
-  @Post('/session/generate/:sessionId/generate')
+  @Post('/session/:sessionId/generate')
   @OpenAPI({ summary: 'Generate document' })
   // @UseBefore(authMiddleware)
   async generateDocument(
     @Req() req: RequestWithUser,
     @Param('sessionId') sessionId: string,
     @Body() data: RenderRequest,
-  ): Promise<ResponseData<string>> {
+  ): Promise<ResponseData<Output>> {
     const url = `${this.baseUrl}/session/${sessionId}/generate`;
-    const res = await this.apiService.post<ApiResponse<string>>({ url, data }, req.user);
-    return { data: res.data.data, message: 'success' };
+    const res = await this.apiService.post<Output, RenderRequest>({ url, data }, req.user);
+    return { data: res.data, message: 'success' };
   }
 }

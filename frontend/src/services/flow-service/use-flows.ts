@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Flow, Flows } from '@data-contracts/backend/data-contracts';
+import { Flow, FlowSummary } from '@data-contracts/backend/data-contracts';
 import { getFlows, useFlowStore } from '@services/flow-service/flow-service';
 import { useUserStore } from '@services/user-service/user-service';
 
 export const useFlows = (): {
-  flows: Flows;
+  flows: FlowSummary[];
   flow: Flow;
   loaded: boolean;
   loading: boolean;
@@ -31,7 +31,7 @@ export const useFlows = (): {
       setLoading(true);
       getFlows()
         .then((res) => {
-          res && setFlows(res as Flows);
+          res && setFlows(res);
           setLoaded(true);
           setLoading(false);
         })

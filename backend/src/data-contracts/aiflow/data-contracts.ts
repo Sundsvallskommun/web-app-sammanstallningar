@@ -26,14 +26,18 @@ export interface StatusType {
   reasonPhrase?: string;
 }
 
-export interface Input {
-  /** The input id */
-  inputId: string;
+export interface CreateSessionRequest {
   /**
-   * The value (BASE64-encoded)
-   * @format byte
+   * Flow id
+   * @example "tjansteskrivelse"
    */
-  value: string;
+  flowId: string;
+  /**
+   * Flow version
+   * @format int32
+   * @example 1
+   */
+  version?: number;
 }
 
 export interface ConstraintViolationProblem {
@@ -122,24 +126,45 @@ export interface Violation {
   message?: string;
 }
 
+export interface Input {
+  /** @format binary */
+  file?: File;
+  uploadedToIntric?: boolean;
+}
+
 export interface Session {
   /** @format uuid */
   id?: string;
-  state?: SessionStateEnum;
-  /** @format int32 */
-  tokenCount?: number;
-  input?: Record<string, string[]>;
+  input?: Record<string, Input[]>;
   stepExecutions?: Record<string, StepExecution>;
+  state?: SessionStateEnum;
 }
 
 export interface StepExecution {
+  state?: StepExecutionStateEnum;
   /** @format date-time */
   startedAt?: string;
   /** @format date-time */
+  lastUpdatedAt?: string;
+  /** @format date-time */
   finishedAt?: string;
-  state?: StepExecutionStateEnum;
   output?: string;
   errorMessage?: string;
+}
+
+export interface ChatRequest {
+  /** The input */
+  input: string;
+  /**
+   * Whether to run/re-run required steps
+   * @default false
+   */
+  runRequiredSteps?: boolean;
+}
+
+export interface SimpleInput {
+  /** The input value */
+  value: string;
 }
 
 export interface RenderRequest {
@@ -147,8 +172,15 @@ export interface RenderRequest {
   templateId?: string;
 }
 
+export interface Output {
+  /** The BASE64-encoded (binary) data */
+  data?: string;
+}
+
 export interface Flow {
   id?: string;
+  /** @format int32 */
+  version?: number;
   name?: string;
   description?: string;
   inputPrefix?: string;
@@ -162,8 +194,15 @@ export interface FlowInput {
   name?: string;
   description?: string;
   type?: FlowInputTypeEnum;
-  cardinality?: FlowInputCardinalityEnum;
+  optional?: boolean;
+  multipleValued?: boolean;
   passthrough?: boolean;
+}
+
+export interface IntricEndpoint {
+  type?: IntricEndpointTypeEnum;
+  /** @format uuid */
+  id?: string;
 }
 
 export interface Step {
@@ -172,34 +211,22 @@ export interface Step {
   order?: number;
   name?: string;
   description?: string;
-  intricServiceId?: string;
-  input?: Input[];
+  intricEndpoint?: IntricEndpoint;
+  input?: FlowInput[];
 }
 
 export interface FlowSummary {
-  /** The flow name */
-  name?: string;
+  /** The flow id */
+  id?: string;
   /**
    * The flow version
    * @format int32
    */
   version?: number;
-}
-
-export interface Flows {
-  flows?: FlowSummary[];
-}
-
-export interface FlowResponse {
   /** The flow name */
   name?: string;
-  /**
-   * The flow version
-   * @format int32
-   */
-  version?: number;
-  /** The flow content */
-  content?: string;
+  /** The flow description */
+  description?: string;
 }
 
 export enum SessionStateEnum {
@@ -209,7 +236,7 @@ export enum SessionStateEnum {
 }
 
 export enum StepExecutionStateEnum {
-  PENDING = 'PENDING',
+  CREATED = 'CREATED',
   RUNNING = 'RUNNING',
   DONE = 'DONE',
   ERROR = 'ERROR',
@@ -218,10 +245,10 @@ export enum StepExecutionStateEnum {
 export enum FlowInputTypeEnum {
   STRING = 'STRING',
   TEXT = 'TEXT',
-  DOCUMENT = 'DOCUMENT',
+  FILE = 'FILE',
 }
 
-export enum FlowInputCardinalityEnum {
-  SINGLE_VALUED = 'SINGLE_VALUED',
-  MULTIPLE_VALUED = 'MULTIPLE_VALUED',
+export enum IntricEndpointTypeEnum {
+  SERVICE = 'SERVICE',
+  ASSISTANT = 'ASSISTANT',
 }

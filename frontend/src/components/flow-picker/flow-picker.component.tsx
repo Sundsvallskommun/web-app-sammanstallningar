@@ -19,14 +19,14 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   const { setFlow } = useFlowStore();
   const { refresh: refreshSession } = useSession();
 
-  const handleFlowPick = (name: string, version: number) => {
-    if (name && version) {
-      getFlow(name, version)
+  const handleFlowPick = (id: string, version: number) => {
+    if (id && version) {
+      getFlow(id, version)
         .then((res) => {
           res && setFlow(res);
         })
         .then(() => {
-          refreshSession(undefined, name, version);
+          refreshSession(null, id, version);
           handleChangeStep(currentStep + 1);
         })
         .catch(() => {
@@ -46,29 +46,22 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
       <p className="mb-36">{t('step:flow_picker.description')}</p>
 
       <div className="flex gap-24 flex-wrap">
-        {flows?.flows?.map((flow, index) => {
+        {flows?.map((flow, index) => {
           return (
             <Card
-              color="bjornstigen"
+              color="vattjom"
               className="min-w-[320px] max-w-[410px] border-1 border-divider rounded-20 relative"
               key={index}
               useHoverEffect
               invert
-              onClick={() => handleFlowPick(flow.name, flow.version)}
+              onClick={() => handleFlowPick(flow.id, flow.version)}
             >
               <Card.Body className="py-32 ">
                 <Card.Header>
                   <h3 className="text-h3-md !mt-0">{flow.name}</h3>
                 </Card.Header>
                 <Card.Text>
-                  <p>
-                    Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the
-                    industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type
-                    and scrambled it to make a type specimen book. It has survived not only five centuries, but also the
-                    leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s
-                    with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop
-                    publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-                  </p>
+                  <p>{flow.description}</p>
                 </Card.Text>
               </Card.Body>
             </Card>

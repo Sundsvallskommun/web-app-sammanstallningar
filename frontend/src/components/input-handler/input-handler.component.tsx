@@ -54,18 +54,11 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
             {flow.input &&
               flow.input.map((input, index) => {
                 return (
-                  <div
-                    className={`col-span-1 ${
-                      input.type === 'STRING' ? 'col-start-1 col-span-2'
-                      : index % 2 === 0 ? 'col-start-2'
-                      : 'col-start-1'
-                    }`}
-                    key={index}
-                  >
+                  <div className={input.type === 'STRING' ? 'col-span-2' : 'col-span-1'} key={index}>
                     <FormLabel className="block mb-8">{input.name}</FormLabel>
                     {input.type === 'STRING' ?
                       <Input {...register(`stringInput.${input.id}`)} />
-                    : input.type === 'DOCUMENT' ?
+                    : input.type === 'FILE' ?
                       watch(`attachmentInput.${input.id}`)?.length ?
                         <div
                           key={`attachment-${index}`}

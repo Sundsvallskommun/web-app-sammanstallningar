@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   Input as InputType,
@@ -9,8 +9,11 @@ import {
   FlowInput as FlowInputType,
   Step as StepType,
   FlowSummary as FlowSummaryType,
-  Flows as FlowsType,
-  FlowResponse as FlowResponseType,
+  CreateSessionRequest as CreateSessionRequestType,
+  ChatRequest as ChatRequestType,
+  SimpleInput as SimpleInputType,
+  Output as OutputType,
+  IntricEndpoint as IntricEndpointType,
 } from '../data-contracts/aiflow/data-contracts';
 
 export enum SessionStateEnum {
@@ -20,7 +23,7 @@ export enum SessionStateEnum {
 }
 
 export enum StepExecutionStateEnum {
-  PENDING = 'PENDING',
+  CREATED = 'CREATED',
   RUNNING = 'RUNNING',
   DONE = 'DONE',
   ERROR = 'ERROR',
@@ -29,7 +32,7 @@ export enum StepExecutionStateEnum {
 export enum FlowInputTypeEnum {
   STRING = 'STRING',
   TEXT = 'TEXT',
-  DOCUMENT = 'DOCUMENT',
+  FILE = 'FILE',
 }
 
 export enum FlowInputCardinalityEnum {
@@ -38,10 +41,10 @@ export enum FlowInputCardinalityEnum {
 }
 
 export class Input implements InputType {
-  @IsString()
-  inputId: string;
-  @IsString()
-  value: string;
+  @IsObject()
+  file?: File;
+  @IsBoolean()
+  uploadedToIntric?: boolean;
 }
 
 export class Session implements SessionType {
@@ -52,9 +55,16 @@ export class Session implements SessionType {
   @IsNumber()
   tokenCount?: number;
   @ValidateNested({ each: true })
-  input?: Record<string, string[]>;
+  input?: Record<string, Input[]>;
   @ValidateNested({ each: true })
   stepExecutions?: Record<string, StepExecution>;
+}
+
+export class CreateSessionRequest implements CreateSessionRequestType {
+  @IsString()
+  flowId: string;
+  @IsNumber()
+  version?: number;
 }
 
 export class StepExecution implements StepExecutionType {
@@ -62,12 +72,31 @@ export class StepExecution implements StepExecutionType {
   startedAt?: string;
   @IsString()
   finishedAt?: string;
+  @IsString()
+  lastUpdatedAt?: string;
   @IsEnum(StepExecutionStateEnum)
   state?: StepExecutionStateEnum;
   @IsString()
   output?: string;
   @IsString()
   errorMessage?: string;
+}
+
+export class ChatRequest implements ChatRequestType {
+  @IsString()
+  input: string;
+  @IsBoolean()
+  runRequiredSteps?: boolean;
+}
+
+export class SimpleInput implements SimpleInputType {
+  @IsString()
+  value: string;
+}
+
+export class Output implements OutputType {
+  @IsString()
+  data?: string;
 }
 
 export class RenderRequest implements RenderRequestType {
@@ -103,10 +132,24 @@ export class FlowInput implements FlowInputType {
   description?: string;
   @IsEnum(FlowInputTypeEnum)
   type?: FlowInputTypeEnum;
-  @IsEnum(FlowInputCardinalityEnum)
-  cardinality?: FlowInputCardinalityEnum;
   @IsBoolean()
   passthrough?: boolean;
+  @IsBoolean()
+  optional?: boolean;
+  @IsBoolean()
+  multipleValued?: boolean;
+}
+
+export enum IntricEndpointTypeEnum {
+  SERVICE = 'SERVICE',
+  ASSISTANT = 'ASSISTANT',
+}
+
+export class IntricEndpoint implements IntricEndpointType {
+  @IsEnum(IntricEndpointTypeEnum)
+  type?: IntricEndpointTypeEnum;
+  @IsString()
+  id?: string;
 }
 
 export class Step implements StepType {
@@ -118,31 +161,20 @@ export class Step implements StepType {
   name?: string;
   @IsString()
   description?: string;
-  @IsString()
-  intricServiceId?: string;
+  @Type(() => IntricEndpoint)
+  intricEndpoint?: IntricEndpoint;
   @ValidateNested({ each: true })
-  @Type(() => Input)
-  input?: Input[];
+  @Type(() => FlowInput)
+  input?: FlowInput[];
 }
 
 export class FlowSummary implements FlowSummaryType {
   @IsString()
-  name?: string;
-  @IsNumber()
-  version?: number;
-}
-
-export class Flows implements FlowsType {
-  @ValidateNested({ each: true })
-  @Type(() => FlowSummary)
-  flows?: FlowSummary[];
-}
-
-export class FlowResponse implements FlowResponseType {
+  id?: string;
   @IsString()
   name?: string;
   @IsNumber()
   version?: number;
   @IsString()
-  content?: string;
+  description?: string;
 }

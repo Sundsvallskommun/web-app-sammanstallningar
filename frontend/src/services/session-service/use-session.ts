@@ -9,14 +9,14 @@ export const useSession = (): {
   loaded: boolean;
   setLoaded: (boolean: boolean) => void;
   loading: boolean;
-  refresh: (sessionId?: string, flowName?: string, flowVersion?: number) => void;
+  refresh: (sessionId?: string, flowId?: string, flowVersion?: number) => void;
 } => {
   const user = useUserStore(useShallow((s) => s.user));
   const [data, setData, loaded, setLoaded, loading, setLoading] = useSessionStore(
     useShallow((state) => [state.data, state.setData, state.loaded, state.setLoaded, state.loading, state.setLoading])
   );
 
-  const refresh = (_sessionId?: string, _flowName?: string, _flowVersion?: number) => {
+  const refresh = (_sessionId?: string, _flowId?: string, _flowVersion?: number) => {
     if (loading) return;
     if (user && _sessionId) {
       setLoading(true);
@@ -31,9 +31,9 @@ export const useSession = (): {
           setLoaded(false);
           setLoading(false);
         });
-    } else if (user && _flowName && _flowVersion) {
+    } else if (user && _flowId && _flowVersion) {
       setLoading(true);
-      createSession(_flowName, _flowVersion)
+      createSession(_flowId, _flowVersion)
         .then((res) => {
           setData(res || null);
           setLoaded(true);

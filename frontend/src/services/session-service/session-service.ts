@@ -1,8 +1,16 @@
 import { ApiResponse, apiService } from '@services/api-service';
-import { Session, StepExecution } from '@data-contracts/backend/data-contracts';
+import {
+  ChatRequest,
+  CreateSessionRequest,
+  Output,
+  RenderRequest,
+  Session,
+  SimpleInput,
+  StepExecution,
+} from '@data-contracts/backend/data-contracts';
 import { create } from 'zustand';
-import { fileToBase64 } from '@utils/toBase64';
 import { UploadFile } from '@sk-web-gui/react';
+import { fileToBase64 } from '@utils/toBase64';
 
 export const getSession: (sessionId: string) => Promise<Session> = (sessionId) => {
   return apiService
@@ -16,9 +24,9 @@ export const getSession: (sessionId: string) => Promise<Session> = (sessionId) =
     });
 };
 
-export const createSession: (flowName: string, flowVersion: number) => Promise<Session> = (flowName, flowVersion) => {
+export const createSession: (flowId: string, flowVersion: number) => Promise<Session> = (flowId, flowVersion) => {
   return apiService
-    .post<ApiResponse<Session>>(`session/${flowName}/${flowVersion}`, {})
+    .post<ApiResponse<Session>, CreateSessionRequest>(`session`, { flowId: flowId, version: flowVersion })
     .then((res) => {
       return res.data.data;
     })
@@ -50,10 +58,12 @@ export const addSessionInput: (
   const stringInputPromises = Object.entries(inputData.stringInput).map(async ([key, value]) => {
     if (value.length) {
       try {
-        await apiService.post<ApiResponse<Session>>(`session/${sessionId}`, { inputId: key, value: btoa(value) });
+        await apiService.post<Session, SimpleInput>(`session/${sessionId}/input/${key}/simple`, {
+          value: value,
+        });
         return true;
       } catch (e) {
-        console.error('Something went wrong');
+        console.error('Something went wrong when adding session input');
       }
     } else {
       return null;
@@ -63,10 +73,10 @@ export const addSessionInput: (
   const textInputPromises = Object.entries(inputData.textInput).map(async ([key, value]) => {
     if (value.length) {
       try {
-        await apiService.post<ApiResponse<Session>>(`session/${sessionId}`, { inputId: key, value: btoa(value) });
+        await apiService.post<Session, SimpleInput>(`session/${sessionId}/input/${key}/simple`, { value: value });
         return true;
       } catch (e) {
-        console.error('Something went wrong');
+        console.error('Something went wrong when adding session input');
       }
     } else {
       return null;
@@ -74,16 +84,20 @@ export const addSessionInput: (
   });
 
   const attachmentInputPromises = Object.entries(inputData.attachmentInput).map(async ([key, value]) => {
-    if (value.length) {
-      try {
-        const fileData = await fileToBase64(value[0].file);
-        await apiService.post<ApiResponse<Session>>(`session/${sessionId}`, { inputId: key, value: fileData });
-        return true;
-      } catch (e) {
-        console.error('Something went wrong');
-      }
-    } else {
-      return null;
+    try {
+      const fileData = await fileToBase64(value[0].file);
+      const buf = Buffer.from(fileData, 'base64');
+      const blob = new Blob([buf], { type: value[0].file.type });
+      const formData = new FormData();
+      formData.append(`files`, blob, value[0].file.name);
+      formData.append(`name`, value[0].file.name);
+
+      await apiService.post<Session, FormData>(`session/${sessionId}/input/${key}/file`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return true;
+    } catch (e) {
+      console.error('Something went wrong when adding session file input');
     }
   });
 
@@ -92,11 +106,27 @@ export const addSessionInput: (
   );
 };
 
-export const runStep: (sessionId: string, stepId: string) => Promise<StepExecution> = (sessionId, stepId) => {
+export const runAllSteps: (sessionId: string) => Promise<number> = (sessionId) => {
   return apiService
-    .post<ApiResponse<StepExecution>>(`session/run/${sessionId}/${stepId}`, {})
+    .post<number, {}>(`session/${sessionId}`, {})
     .then((res) => {
-      return res.data.data;
+      return res.data;
+    })
+    .catch((e) => {
+      console.error('Something went wrong when running all steps');
+      throw e;
+    });
+};
+
+export const runStep: (sessionId: string, stepId: string, data: string) => Promise<StepExecution> = (
+  sessionId,
+  stepId,
+  data
+) => {
+  return apiService
+    .post<StepExecution, ChatRequest>(`session/${sessionId}/step/${stepId}`, { input: data, runRequiredSteps: false })
+    .then((res) => {
+      return res.data;
     })
     .catch((e) => {
       console.error('Something went wrong when running a step');
@@ -106,7 +136,7 @@ export const runStep: (sessionId: string, stepId: string) => Promise<StepExecuti
 
 export const getStepExecution: (sessionId: string, stepId: string) => Promise<StepExecution> = (sessionId, stepId) => {
   return apiService
-    .get<ApiResponse<StepExecution>>(`session/${sessionId}/${stepId}`)
+    .get<ApiResponse<StepExecution>>(`session/${sessionId}/step/${stepId}`)
     .then((res) => {
       return res.data.data;
     })
@@ -116,9 +146,9 @@ export const getStepExecution: (sessionId: string, stepId: string) => Promise<St
     });
 };
 
-export const generateDocument: (sessionId: string, templateId: string) => Promise<string> = (sessionId, templateId) => {
+export const generateDocument: (sessionId: string, templateId: string) => Promise<Output> = (sessionId, templateId) => {
   return apiService
-    .post<ApiResponse<string>>(`session/generate/${sessionId}/generate`, { templateId: templateId })
+    .post<ApiResponse<Output>, RenderRequest>(`session/${sessionId}/generate`, { templateId: templateId })
     .then((res) => {
       return res.data.data;
     })

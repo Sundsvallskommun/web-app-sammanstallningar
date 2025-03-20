@@ -2,7 +2,7 @@ import ApiService from '@services/api.service';
 import { Controller, Get, Param, Req, Res } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import { Flow, Flows } from '@/responses/flow.response';
+import { Flow, FlowSummary } from '@/responses/flow.response';
 import { MUNICIPALITY_ID } from '@/config';
 
 interface ResponseData<T> {
@@ -17,11 +17,11 @@ export class FlowController {
 
   @Get('/flow')
   @OpenAPI({ summary: 'Fetch all flows' })
-  @ResponseSchema(Flows)
+  @ResponseSchema(FlowSummary)
   // @UseBefore(authMiddleware)
-  async fetchFlows(@Req() req: RequestWithUser, @Res() response: Flows): Promise<ResponseData<Flows>> {
+  async fetchFlows(@Req() req: RequestWithUser, @Res() response: FlowSummary): Promise<ResponseData<FlowSummary>> {
     const url = `${this.baseUrl}/flow`;
-    const res = await this.apiService.get<Flows>({ url }, req.user);
+    const res = await this.apiService.get<FlowSummary>({ url }, req.user);
     return { data: res.data, message: 'success' };
   }
 

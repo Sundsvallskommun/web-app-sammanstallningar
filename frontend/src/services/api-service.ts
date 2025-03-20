@@ -1,58 +1,70 @@
 import axios from 'axios';
 import Router from 'next/router';
-import { apiURL } from '@utils/api-url';
+
+export interface Data {
+  error?: string;
+}
 
 export interface ApiResponse<T> {
   data: T;
   message: string;
 }
 
-export const handleError = (error) => {
-  if (error?.response?.status === 401 && !Router.pathname.includes('login')) {
-    Router.push(
-      {
-        pathname: `/login?path=${window.location.pathname}`,
-        query: {
-          path: window.location.pathname,
-          failMessage: error,
-        },
-      },
-      `/login?path=${window.location.pathname}`
-    );
+const handleError = (error) => {
+  let s = '';
+  if (error?.response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    s += `Server responded with ${error?.response?.status} ${error?.response?.data?.message}`;
+  } else if (error?.request) {
+    // The request was made but no response was received
+    // `error?.request` is an instance of XMLHttpRequest in the browser and an instance of
+    // http.ClientRequest in node.js
+    s += `Server did not respond`;
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    s += `Unknown error: ${error?.message}`;
+  }
+  s += ` for url ${error?.config?.url}`;
+  console.error(s);
+
+  if (error?.response?.status === 401 && Router.pathname !== '/login') {
+    // isRedirectingToLogin = true;
+    Router.push('/login');
   }
 
   throw error;
 };
 
-const defaultOptions = {
+const options = {
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const get = <T>(url: string, options?: { [key: string]: any }) =>
-  axios.get<T>(apiURL(url), { ...defaultOptions, ...options }).catch(handleError);
+const get = <T>(url: string) => axios.get<T>(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, options).catch(handleError);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const post = <T>(url: string, data: any, options?: { [key: string]: any }) => {
-  return axios.post<T>(apiURL(url), data, { ...defaultOptions, ...options }).catch(handleError);
+const post = <T, U>(url: string, data: U, customOptions: { [key: string]: any } = {}) => {
+  return axios
+    .post<T>(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, data, { ...options, ...customOptions })
+    .catch(handleError);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const remove = <T>(url: string, options?: { [key: string]: any }) => {
-  return axios.delete<T>(apiURL(url), { ...defaultOptions, ...options }).catch(handleError);
+const patch = <T, U>(url: string, data: U, customOptions: { [key: string]: any } = {}) => {
+  return axios
+    .patch<T>(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, data, { ...options, ...customOptions })
+    .catch(handleError);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const patch = <T>(url: string, data: any, options?: { [key: string]: any }) => {
-  return axios.patch<T>(apiURL(url), data, { ...defaultOptions, ...options }).catch(handleError);
+const put = <T, U>(url: string, data: U, customOptions: { [key: string]: any } = {}) => {
+  return axios
+    .put<T>(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, data, { ...options, ...customOptions })
+    .catch(handleError);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const put = <T>(url: string, data: any, options?: { [key: string]: any }) => {
-  return axios.put<T>(apiURL(url), data, { ...defaultOptions, ...options }).catch(handleError);
+const deleteRequest = <T>(url: string) => {
+  return axios.delete<T>(`${process.env.NEXT_PUBLIC_API_URL}/${url}`, options).catch(handleError);
 };
 
-export const apiService = { get, post, put, patch, delete: remove };
+export const apiService = { get, post, patch, put, deleteRequest };

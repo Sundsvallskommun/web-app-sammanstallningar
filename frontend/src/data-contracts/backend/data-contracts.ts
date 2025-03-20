@@ -20,8 +20,8 @@ export interface UserApiResponse {
 }
 
 export interface Input {
-  inputId: string;
-  value: string;
+  file: object;
+  uploadedToIntric: boolean;
 }
 
 export interface Session {
@@ -32,12 +32,31 @@ export interface Session {
   stepExecutions: any[];
 }
 
+export interface CreateSessionRequest {
+  flowId: string;
+  version: number;
+}
+
 export interface StepExecution {
   startedAt: string;
   finishedAt: string;
+  lastUpdatedAt: string;
   state: StepExecutionStateEnum;
   output: string;
   errorMessage: string;
+}
+
+export interface ChatRequest {
+  input: string;
+  runRequiredSteps: boolean;
+}
+
+export interface SimpleInput {
+  value: string;
+}
+
+export interface Output {
+  data: string;
 }
 
 export interface RenderRequest {
@@ -59,8 +78,14 @@ export interface FlowInput {
   name: string;
   description: string;
   type: FlowInputTypeEnum;
-  cardinality: FlowInputCardinalityEnum;
   passthrough: boolean;
+  optional: boolean;
+  multipleValued: boolean;
+}
+
+export interface IntricEndpoint {
+  type: IntricEndpointTypeEnum;
+  id: string;
 }
 
 export interface Step {
@@ -68,23 +93,14 @@ export interface Step {
   order: number;
   name: string;
   description: string;
-  intricServiceId: string;
-  input: Input[];
+  input: FlowInput[];
 }
 
 export interface FlowSummary {
+  id: string;
   name: string;
   version: number;
-}
-
-export interface Flows {
-  flows: FlowSummary[];
-}
-
-export interface FlowResponse {
-  name: string;
-  version: number;
-  content: string;
+  description: string;
 }
 
 export enum SessionStateEnum {
@@ -94,7 +110,7 @@ export enum SessionStateEnum {
 }
 
 export enum StepExecutionStateEnum {
-  PENDING = 'PENDING',
+  CREATED = 'CREATED',
   RUNNING = 'RUNNING',
   DONE = 'DONE',
   ERROR = 'ERROR',
@@ -103,10 +119,10 @@ export enum StepExecutionStateEnum {
 export enum FlowInputTypeEnum {
   STRING = 'STRING',
   TEXT = 'TEXT',
-  DOCUMENT = 'DOCUMENT',
+  FILE = 'FILE',
 }
 
-export enum FlowInputCardinalityEnum {
-  SINGLE_VALUED = 'SINGLE_VALUED',
-  MULTIPLE_VALUED = 'MULTIPLE_VALUED',
+export enum IntricEndpointTypeEnum {
+  SERVICE = 'SERVICE',
+  ASSISTANT = 'ASSISTANT',
 }

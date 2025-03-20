@@ -1,24 +1,24 @@
 import { ApiResponse, apiService } from '@services/api-service';
-import { Flow, FlowResponse, Flows } from '@data-contracts/backend/data-contracts';
+import { Flow, FlowSummary } from '@data-contracts/backend/data-contracts';
 import { create } from 'zustand';
 
-export const getFlows: () => Promise<Flows> = async () => {
+export const getFlows: () => Promise<FlowSummary[]> = async () => {
   return apiService
-    .get<ApiResponse<Flows>>(`flow`)
+    .get<ApiResponse<FlowSummary[]>>(`flow`)
     .then((res) => {
       return res && res.data.data;
     })
     .catch(() => {
       console.error('Something went wrong');
-      return null as Flows;
+      return null as FlowSummary[];
     });
 };
 
 export const getFlow: (name: string, version: number) => Promise<Flow> = async (name: string, version: number) => {
   return apiService
-    .get<ApiResponse<FlowResponse>>(`flow/${name}/${version}`)
+    .get<ApiResponse<Flow>>(`flow/${name}/${version}`)
     .then((res) => {
-      return res && JSON.parse(res.data.data.content);
+      return res.data.data;
     })
     .catch(() => {
       console.error('Something went wrong');
@@ -27,7 +27,7 @@ export const getFlow: (name: string, version: number) => Promise<Flow> = async (
 };
 
 interface State<T> {
-  flows: Flows;
+  flows: FlowSummary[];
   flow: Flow;
   loaded: boolean;
   loading: boolean;
@@ -35,13 +35,13 @@ interface State<T> {
 
 interface Actions<T> {
   setFlow: (data: Flow) => void;
-  setFlows: (data: Flows) => void;
+  setFlows: (data: FlowSummary[]) => void;
   setLoaded: (loaded: boolean) => void;
   setLoading: (loading: boolean) => void;
 }
 
 const createFlowStore = () => {
-  return create<State<Flow | Flows> & Actions<Flow | Flows>>((set) => ({
+  return create<State<Flow | FlowSummary[]> & Actions<Flow | FlowSummary[]>>((set) => ({
     flows: null,
     flow: null,
     loaded: false,
