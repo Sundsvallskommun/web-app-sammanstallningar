@@ -19,7 +19,7 @@ export const FormStepper: React.FC<FormStepperProps> = (props) => {
 
   return (
     <div className="flex flex-col">
-      <div className="w-full mx-auto bg-vattjom-background-100 lg:px-80">
+      <div className="w-full mx-auto bg-vattjom-background-100 lg:px-80 sm:px-24">
         <div className="mx-auto container">
           <ProgressStepper
             className="w-[60rem] py-32"
@@ -32,7 +32,9 @@ export const FormStepper: React.FC<FormStepperProps> = (props) => {
       </div>
 
       <div className="shadow-100 min-h-[90rem]">
-        <div className="mx-auto container py-32 xl:px-80 lg:px-80 px-16">{steps[currentStep].component}</div>
+        <div className="mx-auto container py-32 2xl:px-0 xl:px-80 lg:px-80 sm:px-32">
+          {steps[currentStep].component}
+        </div>
       </div>
     </div>
   );
