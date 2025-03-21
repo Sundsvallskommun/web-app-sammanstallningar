@@ -12,6 +12,9 @@
     "help" : {
       "title": "Lägg till uppgifter för dokument",
       "text": "Hjälptext för att lägga till uppgifter för dokument"
+    },
+    "error": {
+      "validation": "Detta fält måste fyllas i"
     }
   },
   "compiler" : {
