@@ -45,18 +45,18 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
       <h1 className="text-h1-sm mb-12">{t('step:flow_picker.title')}</h1>
       <p className="mb-36">{t('step:flow_picker.description')}</p>
 
-      <div className="flex gap-24 flex-wrap">
+      <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-24 flex-wrap ">
         {flows?.map((flow, index) => {
           return (
             <Card
               color="vattjom"
-              className="min-w-[320px] max-w-[410px] border-1 border-divider rounded-20 relative"
+              className="col-span-1 border-1 border-divider rounded-20 relative"
               key={index}
               useHoverEffect
               invert
               onClick={() => handleFlowPick(flow.id, flow.version)}
             >
-              <Card.Body className="py-32 ">
+              <Card.Body className="py-32">
                 <Card.Header>
                   <h3 className="text-h3-md !mt-0">{flow.name}</h3>
                 </Card.Header>
