@@ -32,7 +32,7 @@ export const FormStepper: React.FC<FormStepperProps> = (props) => {
       </div>
 
       <div className="shadow-100 min-h-[90rem]">
-        <div className="mx-auto container py-32 2xl:px-0 xl:px-80 lg:px-80 sm:px-32">
+        <div className="mx-auto container py-32 min-[1700px]:px-0 max-[1749px]:px-80 max-[1025px]:px-32">
           {steps[currentStep].component}
         </div>
       </div>
