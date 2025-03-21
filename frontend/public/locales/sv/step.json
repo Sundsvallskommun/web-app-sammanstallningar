@@ -9,17 +9,23 @@
     "label" : "Lägg till uppgifter",
     "title" : "Lägg till uppgifter för {{flow}}",
     "generate" : "Generera {{flow}}",
-    "help_text": "Hjälptext för input handler"
+    "help" : {
+      "title": "Lägg till uppgifter för dokument",
+      "text": "Hjälptext för att lägga till uppgifter för dokument"
+    }
   },
   "compiler" : {
     "label" : "Sammanställ",
     "title" : "Sammanställ delar av {{flow}}",
     "save" : "Spara dokument",
-    "help_text" : "Hjälptext för compiler",
     "generating_data" : "Genererar del, detta kan ta en stund...",
     "generate_again" : "Generera om",
     "generate_again_placeholder" : "Kort instruktion (förkorta, förläng, undvik, lägg till ord, del, stycke om...)",
-    "error" : "Något gick fel vid sammanställningen"
+    "error" : "Något gick fel vid sammanställningen",
+    "help" : {
+      "title": "Sammanställ delar för dokument",
+      "text": "Hjälptext för sammanställning av delar"
+    }
   },
   "document_generator" : {
     "label" : "Spara dokument",

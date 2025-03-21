@@ -29,11 +29,11 @@ export const Helper: React.FC<HelperProps> = (props) => {
       <Modal
         show={isOpen}
         onClose={closeHandler}
-        label={currentStep === 1 ? t('step:input_handler.help_text') : t('step:compiler.help_text')}
+        label={currentStep === 1 ? t('step:input_handler.help.title') : t('step:compiler.help.title')}
         className="w-[60rem]"
       >
         <Modal.Content>
-          <p>{currentStep === 1 ? t('step:input_handler.help_text') : t('step:compiler.help_text')}</p>
+          <p>{currentStep === 1 ? t('step:input_handler.help.text') : t('step:compiler.help.text')}</p>
         </Modal.Content>
       </Modal>
     </div>
