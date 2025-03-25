@@ -126,52 +126,54 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
         </div>
 
         <div className="gap-24 px-24 py-32 bg-background-100 rounded-cards border-1 border-divider">
-          {flow.steps.map((input, index) => {
-            return (
-              <div key={index}>
-                {session?.stepExecutions[flow.steps[index].id]?.state !== StepExecutionStateEnum.DONE && (
-                  <div className="relative">
-                    <div className="absolute z-10 right-4 top-12 bg-bjornstigen-background-100 rounded-cards">
-                      <Button variant="tertiary" size="sm" iconButton rounded disabled>
-                        <Spinner className="p-4" size={16} />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                <Disclosure
-                  header={input.order + '. ' + input.name}
-                  open={index === 0 && true}
-                  disabled={session.stepExecutions[flow.steps[index].id]?.state !== StepExecutionStateEnum.DONE}
-                >
-                  {session.stepExecutions[flow.steps[index].id]?.state === StepExecutionStateEnum.DONE ?
-                    <div className="w-2/3">
-                      <p className="text-large pb-20">{session.stepExecutions[flow.steps[index].id]?.output}</p>
-                      <div className="flex w-full gap-10">
-                        <TextField
-                          {...register(`input-${index}`)}
-                          className="w-full"
-                          size="sm"
-                          placeholder={t('step:compiler.generate_again_placeholder')}
-                        />
-                        <Button
-                          onClick={() => reRunStep(input.id, index)}
-                          size="sm"
-                          leftIcon={<IterationCcw />}
-                          loading={isCompiling}
-                          color="vattjom"
-                          rounded
-                          inverted
-                        >
-                          {t('step:compiler.generate_again')}
+          {flow.steps
+            .sort((a, b) => a.order - b.order)
+            .map((input, index) => {
+              return (
+                <div key={index}>
+                  {session?.stepExecutions[flow.steps[index].id]?.state !== StepExecutionStateEnum.DONE && (
+                    <div className="relative">
+                      <div className="absolute z-10 right-4 top-12 bg-bjornstigen-background-100 rounded-cards">
+                        <Button variant="tertiary" size="sm" iconButton rounded disabled>
+                          <Spinner className="p-4" size={16} />
                         </Button>
                       </div>
                     </div>
-                  : <p>{t('step:compiler.generating_data')}</p>}
-                </Disclosure>
-                {index < flow.steps.length - 1 && <Divider />}
-              </div>
-            );
-          })}
+                  )}
+                  <Disclosure
+                    header={input.order + '. ' + input.name}
+                    open={index === 0 && true}
+                    disabled={session.stepExecutions[flow.steps[index].id]?.state !== StepExecutionStateEnum.DONE}
+                  >
+                    {session.stepExecutions[flow.steps[index].id]?.state === StepExecutionStateEnum.DONE ?
+                      <div className="w-2/3">
+                        <p className="text-large pb-20">{session.stepExecutions[flow.steps[index].id]?.output}</p>
+                        <div className="flex w-full gap-10">
+                          <TextField
+                            {...register(`input-${index}`)}
+                            className="w-full"
+                            size="sm"
+                            placeholder={t('step:compiler.generate_again_placeholder')}
+                          />
+                          <Button
+                            onClick={() => reRunStep(input.id, index)}
+                            size="sm"
+                            leftIcon={<IterationCcw />}
+                            loading={isCompiling}
+                            color="vattjom"
+                            rounded
+                            inverted
+                          >
+                            {t('step:compiler.generate_again')}
+                          </Button>
+                        </div>
+                      </div>
+                    : <p>{t('step:compiler.generating_data')}</p>}
+                  </Disclosure>
+                  {index < flow.steps.length - 1 && <Divider />}
+                </div>
+              );
+            })}
         </div>
 
         <div className="flex justify-between mt-32">
