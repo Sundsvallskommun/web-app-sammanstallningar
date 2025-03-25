@@ -12,6 +12,8 @@
 export interface User {
   name: string;
   username: string;
+  givenName: string;
+  surname: string;
 }
 
 export interface UserApiResponse {

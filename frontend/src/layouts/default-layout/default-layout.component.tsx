@@ -1,8 +1,10 @@
-import { CookieConsent, Footer, Header, Link, Logo } from '@sk-web-gui/react';
+import { CookieConsent, Footer, Header, Link, Logo, UserMenu } from '@sk-web-gui/react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
+import { useUserStore } from '@services/user-service/user-service';
+import { useShallow } from 'zustand/react/shallow';
 
 interface DefaultLayoutProps {
   children: React.ReactNode;
@@ -28,6 +30,7 @@ export default function DefaultLayout({
   const router = useRouter();
   const layoutTitle = `${process.env.NEXT_PUBLIC_APP_NAME}${headerSubtitle ? ` - ${headerSubtitle}` : ''}`;
   const fullTitle = postTitle ? `${layoutTitle} - ${postTitle}` : `${layoutTitle}`;
+  const user = useUserStore(useShallow((s) => s.user));
 
   const { t } = useTranslation();
 
@@ -42,7 +45,7 @@ export default function DefaultLayout({
 
   return (
     <div className="DefaultLayout full-page-layout">
-      <div className="z-40 shadow-100">
+      <div className="flex z-40 shadow-100">
         <Head>
           <title>{title ? title : fullTitle}</title>
           <meta name="description" content={`${process.env.NEXT_PUBLIC_APP_NAME}`} />
@@ -61,7 +64,13 @@ export default function DefaultLayout({
           aria-label={`${headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME} ${headerSubtitle}`}
           logoLinkOnClick={handleLogoClick}
           LogoLinkWrapperComponent={<NextLink legacyBehavior href={logoLinkHref} passHref />}
-        />
+        >
+          <UserMenu
+            initials={`${user.givenName[0]}${user.surname[0]}`}
+            menuTitle={`${user.name} (${user.username})`}
+            menuGroups={[]}
+          />
+        </Header>
       </div>
 
       {preContent && preContent}

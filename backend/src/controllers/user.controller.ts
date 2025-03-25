@@ -15,7 +15,7 @@ export class UserController {
   @ResponseSchema(UserApiResponse)
   @UseBefore(authMiddleware)
   async getUser(@Req() req: RequestWithUser, @Res() response: any): Promise<ClientUser> {
-    const { name, username } = req.user;
+    const { name, username, givenName, surname } = req.user;
 
     if (!name) {
       throw new HttpException(400, 'Bad Request');
@@ -24,6 +24,8 @@ export class UserController {
     const userData: ClientUser = {
       name: name,
       username: username,
+      givenName: givenName,
+      surname: surname,
     };
 
     return response.send({ data: userData, message: 'success' });

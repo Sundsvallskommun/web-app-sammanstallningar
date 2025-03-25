@@ -8,6 +8,8 @@ import { ApiResponse } from '@services/api-service';
 export const emptyUser: User = {
   name: '',
   username: '',
+  givenName: '',
+  surname: '',
   //   permissions: defaultPermissions,
 };
 

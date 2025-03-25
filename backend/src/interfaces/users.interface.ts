@@ -9,4 +9,6 @@ export type User = {
 export type ClientUser = {
   name: string;
   username: string;
+  givenName: string;
+  surname: string;
 };
