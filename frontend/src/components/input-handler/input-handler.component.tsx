@@ -69,6 +69,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                         {...register(`stringInput.${input.id}`, {
                           required: !input.optional,
                         })}
+                        data-cy={input.id}
                       />
                       <InputValidationError errors={errors} inputId={input.id} inputType={'stringInput'} />
                     </>
@@ -105,6 +106,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                           children={<></>}
                           maxFileSizeMB={2}
                           invalid={false}
+                          data-cy={input.id}
                         />
                         <div className="mt-12">
                           <InputValidationError errors={errors} inputId={input.id} inputType={'attachmentInput'} />
@@ -119,6 +121,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                         {...register(`textInput.${input.id}`, {
                           required: !input.optional,
                         })}
+                        data-cy={input.id}
                       />
                       <InputValidationError errors={errors} inputId={input.id} inputType={'textInput'} />
                     </>
@@ -141,6 +144,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
               color="vattjom"
               rightIcon={currentStep === 3 ? null : <ArrowRight />}
               loading={isSaving}
+              data-cy="generate"
             >
               {t('step:input_handler.generate', { flow: flow.name })}
             </Button>

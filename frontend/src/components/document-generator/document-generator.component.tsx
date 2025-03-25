@@ -62,7 +62,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
         <p className="mb-36">{t('step:document_generator.description')}</p>
       </div>
       <div className="flex gap-10 mb-32">
-        <Checkbox onChange={handleChange} /> {t('step:document_generator.attest_description')}
+        <Checkbox onChange={handleChange} data-cy="attest-checkbox" /> {t('step:document_generator.attest_description')}
       </div>
       <div className="mb-32">
         <Button
@@ -72,6 +72,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
           leftIcon={<FileDown />}
           disabled={!checked || isGenerating}
           rounded
+          data-cy="download-document-button"
         >
           {t('step:document_generator.download', { flow: flow.name + ' ' + dayjs(new Date()).format('YYYY-MM-DD') })}
         </Button>
@@ -89,7 +90,13 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
           </Button>
         </div>
         <div>
-          <Button loading={isGenerating} variant="primary" onClick={() => handleChangeStep(0)} color="vattjom">
+          <Button
+            loading={isGenerating}
+            variant="primary"
+            onClick={() => handleChangeStep(0)}
+            color="vattjom"
+            data-cy="generate-new"
+          >
             {t('step:document_generator.new')}
           </Button>
         </div>

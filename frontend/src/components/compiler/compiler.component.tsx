@@ -187,6 +187,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
               color="vattjom"
               rightIcon={<ArrowRight />}
               disabled={isCompiling}
+              data-cy="save-document"
             >
               {t('step:compiler.save')}
             </Button>
