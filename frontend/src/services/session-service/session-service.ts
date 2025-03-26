@@ -55,51 +55,60 @@ export const addSessionInput: (
     return Promise.reject('No session id found');
   }
 
-  const stringInputPromises = Object.entries(inputData.stringInput).map(async ([key, value]) => {
-    if (value.length) {
-      try {
-        await apiService.post<Session, SimpleInput>(`session/${sessionId}/input/${key}/simple`, {
-          value: value,
-        });
-        return true;
-      } catch (e) {
-        console.error('Something went wrong when adding session input');
-      }
-    } else {
-      return null;
-    }
-  });
+  const stringInputPromises =
+    inputData.stringInput ?
+      Object.entries(inputData.stringInput).map(async ([key, value]) => {
+        if (value.length) {
+          try {
+            await apiService.post<Session, SimpleInput>(`session/${sessionId}/input/${key}/simple`, {
+              value: value,
+            });
+            return true;
+          } catch (e) {
+            console.error('Something went wrong when adding session input');
+          }
+        } else {
+          return null;
+        }
+      })
+    : [];
 
-  const textInputPromises = Object.entries(inputData.textInput).map(async ([key, value]) => {
-    if (value.length) {
-      try {
-        await apiService.post<Session, SimpleInput>(`session/${sessionId}/input/${key}/simple`, { value: value });
-        return true;
-      } catch (e) {
-        console.error('Something went wrong when adding session input');
-      }
-    } else {
-      return null;
-    }
-  });
+  const textInputPromises =
+    inputData.textInput ?
+      Object.entries(inputData.textInput).map(async ([key, value]) => {
+        if (value.length) {
+          try {
+            await apiService.post<Session, SimpleInput>(`session/${sessionId}/input/${key}/simple`, { value: value });
+            return true;
+          } catch (e) {
+            console.error('Something went wrong when adding session input');
+          }
+        } else {
+          return null;
+        }
+      })
+    : [];
 
-  const attachmentInputPromises = Object.entries(inputData.attachmentInput).map(async ([key, value]) => {
-    try {
-      const fileData = await fileToBase64(value[0].file);
-      const buf = Buffer.from(fileData, 'base64');
-      const blob = new Blob([buf], { type: value[0].file.type });
-      const formData = new FormData();
-      formData.append(`files`, blob, value[0].file.name);
-      formData.append(`name`, value[0].file.name);
+  const attachmentInputPromises =
+    inputData.attachmentInput ?
+      Object.entries(inputData.attachmentInput).map(async ([key, value]) => {
+        try {
+          const fileData = await fileToBase64(value[0].file);
+          const buf = Buffer.from(fileData, 'base64');
+          const blob = new Blob([buf], { type: value[0].file.type });
+          const formData = new FormData();
+          formData.append(`files`, blob, value[0].file.name);
+          formData.append(`name`, value[0].file.name);
 
-      await apiService.post<Session, FormData>(`session/${sessionId}/input/${key}/file`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      return true;
-    } catch (e) {
-      console.error('Something went wrong when adding session file input');
-    }
-  });
+          await apiService.post<Session, FormData>(`session/${sessionId}/input/${key}/file`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          return true;
+        } catch (e) {
+          console.error('Something went wrong when adding session file input');
+        }
+      })
+    : [];
 
   return Promise.all([...stringInputPromises, ...textInputPromises, ...attachmentInputPromises]).then((results) =>
     results.every((r) => r)

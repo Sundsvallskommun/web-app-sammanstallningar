@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { useFlowStore } from '@services/flow-service/flow-service';
-import { Button, FileUpload, FormControl, FormLabel, Input, Textarea, UploadFile } from '@sk-web-gui/react';
+import {
+  Button,
+  FileUpload,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  UploadFile,
+  useSnackbar,
+} from '@sk-web-gui/react';
 import { useForm } from 'react-hook-form';
 import { useSession } from '@services/session-service/use-session';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -22,6 +31,7 @@ interface FormModel {
 
 export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const { currentStep, handleChangeStep } = props;
+  const toastMessage = useSnackbar();
   const { t } = useTranslation();
   const { flow } = useFlowStore();
   const { data: session, refresh: refreshSession } = useSession();
@@ -38,11 +48,21 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const onSubmit = async () => {
     setIsSaving(true);
 
-    addSessionInput(session.id, getValues()).then(() => {
-      refreshSession(session.id);
-      setIsSaving(false);
-      handleChangeStep(currentStep + 1);
-    });
+    addSessionInput(session.id, getValues())
+      .then(() => {
+        refreshSession(session.id);
+        setIsSaving(false);
+        handleChangeStep(currentStep + 1);
+      })
+      .catch(() => {
+        toastMessage({
+          position: 'bottom',
+          closeable: true,
+          message: t('step:input_handler.error.on_submit'),
+          status: 'error',
+        });
+        setIsSaving(false);
+      });
   };
 
   const handleRemoveUpload = (field) => {
