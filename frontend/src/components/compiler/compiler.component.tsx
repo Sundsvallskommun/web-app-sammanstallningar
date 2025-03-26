@@ -8,6 +8,7 @@ import { useTranslation } from 'next-i18next';
 import { Helper } from '@components/helper/helper.component';
 import { StepExecution, StepExecutionStateEnum } from '@data-contracts/backend/data-contracts';
 import { useForm } from 'react-hook-form';
+import sanitized from '@utils/sanitizer';
 
 interface CompilerProps {
   currentStep: number;
@@ -147,8 +148,14 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                   >
                     {session.stepExecutions[flow.steps[index].id]?.state === StepExecutionStateEnum.DONE ?
                       <div className="w-2/3">
-                        <p className="text-large pb-20">{session.stepExecutions[flow.steps[index].id]?.output}</p>
-                        <div className="flex w-full gap-10">
+                        <span
+                          className="text-large my-0 [&>*>ul]:list-disc [&>*>ul]:ml-lg [&>*>li]:list-disc [&>*>li]:ml-lg [&>*>ol]:list-decimal [&>*>ol]:ml-lg"
+                          dangerouslySetInnerHTML={{
+                            __html: `${sanitized(session.stepExecutions[flow.steps[index].id]?.output)}`,
+                          }}
+                        ></span>
+
+                        <div className="flex w-full gap-10 pt-20">
                           <TextField
                             {...register(`input-${index}`)}
                             className="w-full"
