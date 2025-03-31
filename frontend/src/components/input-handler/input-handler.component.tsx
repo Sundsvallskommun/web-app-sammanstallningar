@@ -129,7 +129,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                           <InputValidationError errors={errors} inputId={input.id} inputType={'attachmentInput'} />
                         </div>
                       </div>
-
+                    </>
                   : <>
                       <Textarea
                         className="w-full"
