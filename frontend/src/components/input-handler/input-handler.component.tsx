@@ -91,7 +91,12 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                         })}
                         data-cy={input.id}
                       />
-                      <InputValidationError errors={errors} inputId={input.id} inputType={'stringInput'} />
+                      <InputValidationError
+                        errors={errors}
+                        inputId={input.id}
+                        inputType={'stringInput'}
+                        description={input.description}
+                      />
                     </>
                   : input.type === 'FILE' ?
                     <>
@@ -126,7 +131,12 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                           data-cy={input.id}
                         />
                         <div className="mt-12">
-                          <InputValidationError errors={errors} inputId={input.id} inputType={'attachmentInput'} />
+                          <InputValidationError
+                            errors={errors}
+                            inputId={input.id}
+                            inputType={'attachmentInput'}
+                            description={input.description}
+                          />
                         </div>
                       </div>
                     </>
@@ -140,7 +150,12 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                         })}
                         data-cy={input.id}
                       />
-                      <InputValidationError errors={errors} inputId={input.id} inputType={'textInput'} />
+                      <InputValidationError
+                        errors={errors}
+                        inputId={input.id}
+                        inputType={'textInput'}
+                        description={input.description}
+                      />
                     </>
                   }
                 </div>
