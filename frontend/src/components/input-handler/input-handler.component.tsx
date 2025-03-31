@@ -94,30 +94,27 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                       <InputValidationError errors={errors} inputId={input.id} inputType={'stringInput'} />
                     </>
                   : input.type === 'FILE' ?
-                    watch(`attachmentInput.${input.id}`)?.length ?
-                      <div
-                        key={`attachment-${index}`}
-                        className="h-[116px] flex bg-background-content border-1 border-divider rounded-cards justify-center"
-                      >
-                        {getValues(`attachmentInput.${input.id}`)?.map((file, fileIndex) => {
-                          return (
-                            <FileUpload.ListItem
-                              className="justify-self-center"
-                              showBorder={false}
-                              key={fileIndex}
-                              index={fileIndex}
-                            >
-                              <FileUpload.ListItemIcon />
-                              <FileUpload.ListItemContentName heading={file.file.name} />
-                              <FileUpload.ListItemActions
-                                showRemove
-                                onRemove={() => handleRemoveUpload(`attachmentInput.${input.id}`)}
-                              />
-                            </FileUpload.ListItem>
-                          );
-                        })}
-                      </div>
-                    : <div className="h-[116px] mb-32">
+                    <>
+                      {watch(`attachmentInput.${input.id}`)?.length ?
+                        <div
+                          key={`attachment-${index}`}
+                          className="bg-background-content border-1 border-divider rounded rounded-card mb-16 p-8"
+                        >
+                          {getValues(`attachmentInput.${input.id}`)?.map((file: UploadFile, fileIndex: number) => {
+                            return (
+                              <FileUpload.ListItem showBorder={false} key={fileIndex} index={fileIndex}>
+                                <FileUpload.ListItemIcon />
+                                <FileUpload.ListItemContentName className="w-full" heading={file.file.name} />
+                                <FileUpload.ListItemActions
+                                  showRemove
+                                  onRemove={() => handleRemoveUpload(`attachmentInput.${input.id}`)}
+                                />
+                              </FileUpload.ListItem>
+                            );
+                          })}
+                        </div>
+                      : null}
+                      <div className="h-[116px] mb-32">
                         <FileUpload.Field
                           {...register(`attachmentInput.${input.id}`, {
                             required: !input.optional,
