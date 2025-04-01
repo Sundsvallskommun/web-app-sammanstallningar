@@ -73,35 +73,43 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   const reRunStep = (stepId: string, index: number) => {
-    setIsCompiling(true);
-
-    runStep(session.id, stepId, getValues(`input-${index}`)).then(() => {
-      try {
-        const interval = setInterval(async () => {
-          await getStepExecution(session.id, stepId)
-            .then((executedStep: StepExecution) => {
-              if (executedStep.state === StepExecutionStateEnum.DONE) {
-                clearInterval(interval);
-                setIsCompiling(false);
-              } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                clearInterval(interval);
-              }
-            })
-            .catch(() => {
-              toastMessage({
-                position: 'bottom',
-                closeable: true,
-                message: t('step:compiler.error'),
-                status: 'error',
+    if (!getValues(`input-${index}`)) {
+      toastMessage({
+        position: 'bottom',
+        closeable: true,
+        message: t('step:compiler.give_instruction_info'),
+        status: 'info',
+      });
+    } else {
+      setIsCompiling(true);
+      runStep(session.id, stepId, getValues(`input-${index}`)).then(() => {
+        try {
+          const interval = setInterval(async () => {
+            await getStepExecution(session.id, stepId)
+              .then((executedStep: StepExecution) => {
+                if (executedStep.state === StepExecutionStateEnum.DONE) {
+                  clearInterval(interval);
+                  setIsCompiling(false);
+                } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
+                  clearInterval(interval);
+                }
+              })
+              .catch(() => {
+                toastMessage({
+                  position: 'bottom',
+                  closeable: true,
+                  message: t('step:compiler.error'),
+                  status: 'error',
+                });
               });
-            });
-        }, 1000);
-      } catch (e) {
-        console.error('Something went wrong when rerunning step', e);
-      }
-    });
+          }, 1000);
+        } catch (e) {
+          console.error('Something went wrong when rerunning step', e);
+        }
+      });
 
-    refreshSession(session.id);
+      refreshSession(session.id);
+    }
   };
 
   useEffect(() => {

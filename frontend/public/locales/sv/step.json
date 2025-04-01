@@ -29,7 +29,8 @@
     "help" : {
       "title": "Sammanställ delar för dokument",
       "text": "Hjälptext för sammanställning av delar"
-    }
+    },
+    "give_instruction_info" : "Ange instruktion för att generera om steg"
   },
   "document_generator" : {
     "label" : "Spara dokument",

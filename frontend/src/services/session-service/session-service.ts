@@ -135,7 +135,10 @@ export const runStep: (sessionId: string, stepId: string, data: string) => Promi
   data
 ) => {
   return apiService
-    .post<StepExecution, ChatRequest>(`session/${sessionId}/step/${stepId}`, { input: data, runRequiredSteps: false })
+    .post<StepExecution, ChatRequest>(`session/${sessionId}/step/${stepId}`, {
+      input: 'Uppdatera ditt befintliga kompletta svar men med följande anvisning: ' + data,
+      runRequiredSteps: false,
+    })
     .then((res) => {
       return res.data;
     })
