@@ -103,7 +103,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                       {watch(`attachmentInput.${input.id}`)?.length ?
                         <div
                           key={`attachment-${index}`}
-                          className="bg-background-content border-1 border-divider rounded rounded-card mb-16 p-8"
+                          className="bg-background-content border-1 border-divider rounded-cards mb-16 p-8"
                         >
                           {getValues(`attachmentInput.${input.id}`)?.map((file: UploadFile, fileIndex: number) => {
                             return (
@@ -119,17 +119,26 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                           })}
                         </div>
                       : null}
-                      <div className="h-[116px] mb-32">
-                        <FileUpload.Field
-                          {...register(`attachmentInput.${input.id}`, {
-                            required: !input.optional,
-                          })}
-                          variant="horizontal"
-                          children={<></>}
-                          maxFileSizeMB={2}
-                          invalid={false}
-                          data-cy={input.id}
-                        />
+                      <>
+                        {(
+                          input.multipleValued ||
+                          (!input.multipleValued && !getValues(`attachmentInput.${input.id}`)?.length)
+                        ) ?
+                          <div className="h-[116px] mb-32">
+                            <FileUpload.Field
+                              {...register(`attachmentInput.${input.id}`, {
+                                required: !input.optional,
+                              })}
+                              variant="horizontal"
+                              children={<></>}
+                              maxFileSizeMB={2}
+                              invalid={false}
+                              data-cy={input.id}
+                              allowMultiple={input.multipleValued}
+                            />
+                          </div>
+                        : null}
+
                         <div className="mt-12">
                           <InputValidationError
                             errors={errors}
@@ -138,7 +147,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                             description={input.description}
                           />
                         </div>
-                      </div>
+                      </>
                     </>
                   : <>
                       <Textarea

@@ -92,20 +92,22 @@ export const addSessionInput: (
   const attachmentInputPromises =
     inputData.attachmentInput ?
       Object.entries(inputData.attachmentInput).map(async ([key, value]) => {
-        try {
-          const fileData = await fileToBase64(value[0].file);
-          const buf = Buffer.from(fileData, 'base64');
-          const blob = new Blob([buf], { type: value[0].file.type });
-          const formData = new FormData();
-          formData.append(`files`, blob, value[0].file.name);
-          formData.append(`name`, value[0].file.name);
+        if (value.length) {
+          try {
+            const fileData = await fileToBase64(value[0].file);
+            const buf = Buffer.from(fileData, 'base64');
+            const blob = new Blob([buf], { type: value[0].file.type });
+            const formData = new FormData();
+            formData.append(`files`, blob, value[0].file.name);
+            formData.append(`name`, value[0].file.name);
 
-          await apiService.post<Session, FormData>(`session/${sessionId}/input/${key}/file`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          return true;
-        } catch (e) {
-          console.error('Something went wrong when adding session file input');
+            await apiService.post<Session, FormData>(`session/${sessionId}/input/${key}/file`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return true;
+          } catch (e) {
+            console.error('Something went wrong when adding session file input');
+          }
         }
       })
     : [];
