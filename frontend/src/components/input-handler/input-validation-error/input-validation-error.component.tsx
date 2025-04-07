@@ -14,8 +14,16 @@ export const InputValidationError = (props: InputValidationErrorProps) => {
   const { t } = useTranslation();
   const { errors, inputId, inputType, description } = props;
 
-  return errors?.[inputType]?.[`${inputId}`]?.type ?
-      <p className="text-error text-small">
+  const getInputType = () => {
+    return (
+      inputType === 'STRING' ? 'stringInput'
+      : inputType === 'TEXT' ? 'textInput'
+      : 'attachmentInput'
+    );
+  };
+
+  return errors?.[getInputType()]?.[`${inputId}`] ?
+      <p className="text-error text-small mt-8">
         <Icon size="1.7rem" icon={<Info />} className="align-text-bottom mr-5" />
         {description ? description : t('step:input_handler.error.validation')}
       </p>
