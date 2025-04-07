@@ -41,7 +41,7 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col mb-24">
       <h1 className="text-h1-sm mb-12">{t('step:flow_picker.title')}</h1>
       <p className="mb-36">{t('step:flow_picker.description')}</p>
 
