@@ -1,6 +1,8 @@
 export const meUser = {
   data: {
-    username: 'anv01anv',
     name: 'Användare Användarsson',
+    username: 'anv01anv',
+    givenName: 'Användare',
+    surname: 'Användarsson',
   },
 };

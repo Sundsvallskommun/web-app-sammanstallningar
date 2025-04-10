@@ -39,7 +39,7 @@ describe('Can use AI-sammanställningar', () => {
 
     // Try to surpass input step
     cy.get('[data-cy="generate"]').click();
-    cy.get('p').contains('Detta fält måste fyllas i').should('exist');
+    cy.get('p').contains('Fyll i efterfrågad information').should('exist');
 
     // Add information
     flow.data.input.map((input) => {
