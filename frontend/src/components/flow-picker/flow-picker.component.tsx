@@ -14,7 +14,7 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   const { handleChangeStep, currentStep } = props;
   const { t } = useTranslation();
   const toastMessage = useSnackbar();
-  const colors = ['vattjom', 'gronsta', 'bjornstigen', 'juniskar'] as const;
+  const colors = ['vattjom', 'gronsta', 'bjornstigen', 'juniskar', 'mono'] as const;
   type CardColor = (typeof colors)[number];
   const { flows } = useFlows();
   const { setFlow } = useFlowStore();
@@ -61,6 +61,7 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
               key={index}
               useHoverEffect
               invert
+              layout="horizontal"
               onClick={() => handleFlowPick(flow.id, flow.version)}
               data-cy={`flow-card-${index}`}
             >
