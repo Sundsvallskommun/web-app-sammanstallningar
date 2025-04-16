@@ -60,7 +60,7 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
               className="col-span-1 border-1 border-divider rounded-20"
               key={index}
               useHoverEffect
-              invert
+              invert={color !== 'mono'}
               layout="horizontal"
               onClick={() => handleFlowPick(flow.id, flow.version)}
               data-cy={`flow-card-${index}`}
