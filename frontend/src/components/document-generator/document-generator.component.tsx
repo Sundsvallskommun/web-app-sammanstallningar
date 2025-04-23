@@ -72,7 +72,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
         <p className="mb-36">{t('step:document_generator.description')}</p>
       </div>
       <div className="flex gap-10 mb-32">
-        <Checkbox onChange={handleCheckboxChange} disabled={isGenerating} data-cy="attest-checkbox" />{' '}
+        <Checkbox onChange={handleCheckboxChange} disabled={isGenerating} data-cy="attest-checkbox" />
         {t('step:document_generator.attest_description')}
       </div>
       <div className="mb-32">
