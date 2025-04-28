@@ -24,6 +24,13 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   const [stepIndex, setStepIndex] = useState<number>();
   const { register, getValues } = useForm();
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const [isReRunningStep, setIsReRunningStep] = useState<boolean[]>([]);
+
+  const handleReRunningStepsLoading = (index: number) => {
+    const steps = [...isReRunningStep];
+    steps[index] = true;
+    setIsReRunningStep(steps);
+  };
 
   const executeAllSteps = (index: number) => {
     setStepIndex(index);
@@ -81,34 +88,36 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
         status: 'info',
       });
     } else {
-      setIsCompiling(true);
-      runStep(session.id, stepId, getValues(`input-${index}`)).then(() => {
-        try {
-          const interval = setInterval(async () => {
-            await getStepExecution(session.id, stepId)
-              .then((executedStep: StepExecution) => {
-                if (executedStep.state === StepExecutionStateEnum.DONE) {
-                  clearInterval(interval);
-                  setIsCompiling(false);
-                } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                  clearInterval(interval);
-                }
-              })
-              .catch(() => {
-                toastMessage({
-                  position: 'bottom',
-                  closeable: true,
-                  message: t('step:compiler.error'),
-                  status: 'error',
+      handleReRunningStepsLoading(index);
+      runStep(session.id, stepId, getValues(`input-${index}`))
+        .then(() => {
+          try {
+            const interval = setInterval(async () => {
+              await getStepExecution(session.id, stepId)
+                .then((executedStep: StepExecution) => {
+                  if (executedStep.state === StepExecutionStateEnum.DONE) {
+                    clearInterval(interval);
+                  } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
+                    clearInterval(interval);
+                  }
+                })
+                .catch(() => {
+                  toastMessage({
+                    position: 'bottom',
+                    closeable: true,
+                    message: t('step:compiler.error'),
+                    status: 'error',
+                  });
                 });
-              });
-          }, 1000);
-        } catch (e) {
-          console.error('Something went wrong when rerunning step', e);
-        }
-      });
-
-      refreshSession(session.id);
+            }, 1000);
+          } catch (e) {
+            console.error('Something went wrong when rerunning step', e);
+          }
+        })
+        .then(() => {
+          setIsReRunningStep([]);
+          refreshSession(session.id);
+        });
     }
   };
 
@@ -151,7 +160,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                   )}
                   <Disclosure
                     header={input.order + '. ' + input.name}
-                    open={index === 0 && true}
+                    open={index === 0}
                     disabled={session.stepExecutions[flow.steps[index].id]?.state !== StepExecutionStateEnum.DONE}
                   >
                     {session.stepExecutions[flow.steps[index].id]?.state === StepExecutionStateEnum.DONE ?
@@ -174,8 +183,8 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                             onClick={() => reRunStep(input.id, index)}
                             size="sm"
                             leftIcon={<IterationCcw />}
-                            loading={isCompiling}
                             color="vattjom"
+                            loading={isReRunningStep[index]}
                             rounded
                             inverted
                           >
