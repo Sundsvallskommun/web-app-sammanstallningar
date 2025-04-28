@@ -27,6 +27,16 @@ describe('Can use AI-sammanställningar', () => {
     cy.intercept('GET', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step2', stepExecution2);
     cy.intercept('GET', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step3', stepExecution3);
 
+    cy.intercept('POST', '**/api/session/**/generate', {
+      statusCode: 200,
+      body: {
+        data: {
+          data: 'SGVsbG8gd29ybGQ=',
+          mimeType: 'application/pdf',
+        },
+      },
+    }).as('generateDocument');
+
     cy.viewport('macbook-15');
     cy.visit('http://localhost:3000/');
 
@@ -64,9 +74,10 @@ describe('Can use AI-sammanställningar', () => {
     // Save document
     cy.get('[data-cy="download-document-button"]').should('be.disabled');
     cy.get('[data-cy="attest-checkbox"]').should('exist').check({ force: true });
-    cy.get('[data-cy="download-document-button"]').should('not.be.disabled').contains('Ladda ner Flow 1');
+    cy.wait('@generateDocument');
+    cy.get('[data-cy="download-document-button"]').should('not.be.disabled');
+    cy.get('[data-cy="download-document-button"]').contains('Ladda ner Flow 1');
     cy.get('[data-cy="generate-new"]').should('exist').click();
-
     cy.get('[data-cy="flow-card-0"]').contains('Flow 1').should('exist');
   });
 });
