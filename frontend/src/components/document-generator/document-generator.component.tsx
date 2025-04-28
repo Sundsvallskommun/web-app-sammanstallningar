@@ -50,9 +50,19 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
           message: t('step:document_generator.error'),
           status: 'error',
         });
+      })
+      .finally(() => {
+        setIsGenerating(false);
       });
+  };
 
-    setIsGenerating(false);
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    handleChange();
+
+    if (isChecked) {
+      handleDownload();
+    }
   };
 
   return (
@@ -62,7 +72,8 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
         <p className="mb-36">{t('step:document_generator.description')}</p>
       </div>
       <div className="flex gap-10 mb-32">
-        <Checkbox onChange={handleChange} data-cy="attest-checkbox" /> {t('step:document_generator.attest_description')}
+        <Checkbox onChange={handleCheckboxChange} disabled={isGenerating} data-cy="attest-checkbox" />
+        {t('step:document_generator.attest_description')}
       </div>
       <div className="mb-32">
         <Button
