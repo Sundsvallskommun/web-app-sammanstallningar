@@ -91,6 +91,9 @@ const samlStrategy = new Strategy(
         message: 'Missing SAML profile',
       });
     }
+
+    logger.info(`SAML Profile: ${JSON.stringify(profile)}`);
+
     const { givenName, surname, citizenIdentifier, username } = profile;
 
     if (!givenName || !surname || !citizenIdentifier) {
@@ -303,8 +306,6 @@ class App {
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
       let successRedirect: URL, failureRedirect: URL;
 
-      console.log('SAML Login Callback body:', req.body);
-
       let urls = req?.body?.RelayState.split(',');
 
       if (isValidUrl(urls[0])) {
@@ -318,7 +319,6 @@ class App {
 
       passport.authenticate('saml', (err, user) => {
         if (err) {
-          console.log('SAML Authentication Error:', err);
           const queries = new URLSearchParams(failureRedirect.searchParams);
           if (err?.name) {
             queries.append('failMessage', err.name);
