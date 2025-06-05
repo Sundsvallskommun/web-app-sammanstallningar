@@ -7,6 +7,7 @@ import { appURL } from '@utils/app-url';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { apiURL } from '@utils/api-url';
+import { capitalize } from 'underscore.string';
 
 export default function Start() {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function Start() {
         // autologin
         onLogin();
       } else if (failMessage) {
-        setErrorMessage(t(`login:errors.${failMessage}`));
+        setErrorMessage(t(`login:errors.${failMessage}`, 'Okänt fel vid inloggning, försök igen.'));
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,7 +80,7 @@ export default function Start() {
             </div>
 
             <Button inverted onClick={() => onLogin()} ref={initalFocus} data-cy="loginButton">
-              {t('common:login')}
+              {capitalize(t('common:login'))}
             </Button>
 
             {errorMessage && <FormErrorMessage className="mt-lg">{errorMessage}</FormErrorMessage>}

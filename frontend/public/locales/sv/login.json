@@ -1,5 +1,5 @@
 {
-  "description": "Beskrivning av appen",
+  "description": "Logga in för att göra ärendesammanställningar",
   "errors": {
     "SAML_MISSING_GROUP": "Användaren saknar rätt grupper",
     "SAML_MISSING_ATTRIBUTES": "Användaren saknar rätt attribut",
