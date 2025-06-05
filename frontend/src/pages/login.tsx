@@ -7,7 +7,7 @@ import { appURL } from '@utils/app-url';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { apiURL } from '@utils/api-url';
-import { capitalize } from 'cypress/types/lodash';
+import { capitalize } from 'underscore.string';
 
 export default function Start() {
   const router = useRouter();
