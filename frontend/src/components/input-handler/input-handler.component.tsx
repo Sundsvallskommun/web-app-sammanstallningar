@@ -136,7 +136,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                               name={`attachmentInput.${input.id}`}
                               variant="horizontal"
                               children={<></>}
-                              maxFileSizeMB={2}
+                              maxFileSizeMB={25}
                               invalid={false}
                               data-cy={input.id}
                               allowMultiple={input.multipleValued}
