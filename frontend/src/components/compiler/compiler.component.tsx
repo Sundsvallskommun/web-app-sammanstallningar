@@ -59,6 +59,12 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                 clearInterval(interval);
                 executeAllSteps(index + 1);
               } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
+                toastMessage({
+                  position: 'bottom',
+                  closeable: true,
+                  message: t('step:compiler.specific_step_error'),
+                  status: 'error',
+                });
                 clearInterval(interval);
               }
             })
