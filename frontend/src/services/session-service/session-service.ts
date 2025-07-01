@@ -66,6 +66,7 @@ export const addSessionInput: (
             return true;
           } catch (e) {
             console.error('Something went wrong when adding session input');
+            throw e;
           }
         } else {
           return null;
@@ -82,6 +83,7 @@ export const addSessionInput: (
             return true;
           } catch (e) {
             console.error('Something went wrong when adding session input');
+            throw e;
           }
         } else {
           return null;
@@ -107,6 +109,7 @@ export const addSessionInput: (
             return true;
           } catch (e) {
             console.error('Something went wrong when adding session file input');
+            throw e;
           }
         }
       })
