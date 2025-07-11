@@ -33,6 +33,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   const executeAllSteps = (index: number) => {
+    refreshSession(session.id);
     setStepIndex(index);
 
     if (index === 0) {

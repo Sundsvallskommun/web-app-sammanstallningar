@@ -1,5 +1,5 @@
 import LoginGuard from '@components/login-guard/login-guard';
-import { GuiProvider } from '@sk-web-gui/react';
+import { ConfirmationDialogContextProvider, GuiProvider } from '@sk-web-gui/react';
 import '@styles/tailwind.scss';
 import dayjs from 'dayjs';
 import 'dayjs/locale/sv';
@@ -34,11 +34,13 @@ dayjs.updateLocale('sv', {
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <GuiProvider /** colorScheme="light"**/>
-      <AppWrapper>
-        <LoginGuard>
-          <Component {...pageProps} />
-        </LoginGuard>
-      </AppWrapper>
+      <ConfirmationDialogContextProvider>
+        <AppWrapper>
+          <LoginGuard>
+            <Component {...pageProps} />
+          </LoginGuard>
+        </AppWrapper>
+      </ConfirmationDialogContextProvider>
     </GuiProvider>
   );
 }

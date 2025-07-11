@@ -66,7 +66,7 @@ export default function DefaultLayout({
           LogoLinkWrapperComponent={<NextLink legacyBehavior href={logoLinkHref} passHref />}
         >
           <UserMenu
-            initials={`${user.givenName[0]}${user.surname[0]}`}
+            initials={`${user.givenName?.[0]}${user.surname?.[0]}`}
             menuTitle={`${user.name} (${user.username})`}
             menuGroups={[]}
           />
