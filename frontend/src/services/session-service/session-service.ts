@@ -24,16 +24,17 @@ export const getSession: (sessionId: string) => Promise<Session> = (sessionId) =
     });
 };
 
-export const createSession: (flowId: string, flowVersion: number) => Promise<Session> = (flowId, flowVersion) => {
-  return apiService
-    .post<ApiResponse<Session>, CreateSessionRequest>(`session`, { flowId: flowId, version: flowVersion })
-    .then((res) => {
-      return res.data.data;
-    })
-    .catch((e) => {
-      console.error('Something went wrong when creating a session');
-      throw e;
+export const createSession: (flowId: string, flowVersion: number) => Promise<Session> = async (flowId, flowVersion) => {
+  try {
+    const res = await apiService.post<ApiResponse<Session>, CreateSessionRequest>(`session`, {
+      flowId: flowId,
+      version: flowVersion,
     });
+    return res.data.data;
+  } catch (e) {
+    console.error('Something went wrong when creating a session');
+    throw e;
+  }
 };
 
 export const addSessionInput: (
