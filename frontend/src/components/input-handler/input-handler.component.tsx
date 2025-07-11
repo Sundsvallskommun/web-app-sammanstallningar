@@ -46,7 +46,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
     getValues,
     handleSubmit,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, submitCount },
   } = useFormContext<FormModel>();
 
   const { attachmentInput } = watch();
@@ -60,7 +60,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   }, []);
 
   const onSubmit = async () => {
-    if (isDirty) {
+    if (submitCount > 0 && isDirty) {
       showConfirmation(
         'Vill du generera om dokumentet?',
         'Du har ändrat uppgifter i formuläret och dokumentet kommer att behöva genereras om.',
@@ -79,6 +79,13 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
           reset(getValues().currentFormState);
           handleChangeStep(currentStep + 1);
         }
+      });
+    } else if (isDirty) {
+      setIsSaving(true);
+      await createSession(flow.id, flow.version).then((res) => {
+        setData(res);
+        refreshSession(res.id);
+        handleNewSessionInput(res.id);
       });
     } else {
       handleChangeStep(currentStep + 1);
