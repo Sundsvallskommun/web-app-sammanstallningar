@@ -62,10 +62,10 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const onSubmit = async () => {
     if (submitCount > 0 && isDirty) {
       showConfirmation(
-        'Vill du generera om dokumentet?',
-        'Du har ändrat uppgifter i formuläret och dokumentet kommer att behöva genereras om.',
-        'Ja, generera om dokument',
-        'Nej, använd ursprunglig version',
+        t('step:input_handler.confirmation.title'),
+        t('step:input_handler.confirmation.message'),
+        t('step:input_handler.confirmation.confirm_label'),
+        t('step:input_handler.confirmation.dismiss_label'),
         'info'
       ).then(async (confirm: boolean) => {
         if (confirm) {
