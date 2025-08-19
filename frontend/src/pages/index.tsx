@@ -26,6 +26,8 @@ export function Index() {
   });
 
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [compilerStepIndex, setCompilerStepIndex] = useState<number>(0);
+  const [inputHandlerSubmitCount, setInputHandlerSubmitCount] = useState<number>(0);
 
   const handleChangeStep = (step: number) => {
     setCurrentStep(step);
@@ -44,12 +46,28 @@ export function Index() {
               },
               {
                 label: t('step:input_handler.label'),
-                component: <InputHandler currentStep={currentStep} handleChangeStep={handleChangeStep} />,
+                component: (
+                  <InputHandler
+                    currentStep={currentStep}
+                    handleChangeStep={handleChangeStep}
+                    setCompilerStepIndex={setCompilerStepIndex}
+                    submitCount={inputHandlerSubmitCount}
+                    setSubmitCount={setInputHandlerSubmitCount}
+                  />
+                ),
                 valid: true,
               },
               {
                 label: t('step:compiler.label'),
-                component: <Compiler currentStep={currentStep} handleChangeStep={handleChangeStep} />,
+                component: (
+                  <Compiler
+                    currentStep={currentStep}
+                    handleChangeStep={handleChangeStep}
+                    stepIndex={compilerStepIndex}
+                    setStepIndex={setCompilerStepIndex}
+                    submitCount={inputHandlerSubmitCount}
+                  />
+                ),
                 valid: true,
               },
               {

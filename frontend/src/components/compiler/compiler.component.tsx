@@ -13,17 +13,19 @@ import sanitized from '@utils/sanitizer';
 interface CompilerProps {
   currentStep: number;
   handleChangeStep: (number: number) => void;
+  stepIndex: number;
+  setStepIndex: (number: number) => void;
+  submitCount: number;
 }
 
 export const Compiler: React.FC<CompilerProps> = (props) => {
-  const { currentStep, handleChangeStep } = props;
+  const { currentStep, handleChangeStep, stepIndex, setStepIndex, submitCount } = props;
   const { t } = useTranslation();
   const toastMessage = useSnackbar();
   const { flow } = useFlowStore();
   const { data: session, refresh: refreshSession } = useSession();
-  const [stepIndex, setStepIndex] = useState<number>();
   const { register, getValues } = useForm();
-  const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const [isCompiling, setIsCompiling] = useState<boolean>(true);
   const [isReRunningStep, setIsReRunningStep] = useState<boolean[]>([]);
 
   const handleReRunningStepsLoading = (index: number) => {
@@ -36,47 +38,48 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
     refreshSession(session.id);
     setStepIndex(index);
 
-    if (index === 0) {
-      setIsCompiling(true);
-
-      runAllSteps(session.id)
-        .then(() => refreshSession(session.id))
-        .catch(() => {
-          toastMessage({
-            position: 'bottom',
-            closeable: true,
-            message: t('step:compiler.error'),
-            status: 'error',
-          });
-        });
-    }
-
-    if (index < flow.steps.length) {
-      try {
-        const interval = setInterval(async () => {
-          await getStepExecution(session.id, flow.steps[index].id)
-            .then((executedStep: StepExecution) => {
-              if (executedStep.state === StepExecutionStateEnum.DONE) {
-                clearInterval(interval);
-                executeAllSteps(index + 1);
-              } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                clearInterval(interval);
-              }
-            })
-            .catch(() => {
-              toastMessage({
-                position: 'bottom',
-                closeable: true,
-                message: t('step:compiler.error'),
-                status: 'error',
-              });
+    if (session.id) {
+      if (index === 0) {
+        runAllSteps(session.id)
+          .then(() => refreshSession(session.id))
+          .catch(() => {
+            toastMessage({
+              position: 'bottom',
+              closeable: true,
+              message: t('step:compiler.error'),
+              status: 'error',
             });
-        }, 1000);
-      } catch (e) {
-        console.error('Something went wrong when executing all steps', e);
+          });
       }
-    } else {
-      setIsCompiling(false);
+
+      if (index < flow.steps.length) {
+        try {
+          const interval = setInterval(async () => {
+            await getStepExecution(session.id, flow.steps[index].id)
+              .then((executedStep: StepExecution) => {
+                if (executedStep.state === StepExecutionStateEnum.DONE) {
+                  clearInterval(interval);
+                  executeAllSteps(index + 1);
+                } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
+                  clearInterval(interval);
+                }
+              })
+              .catch(() => {
+                clearInterval(interval);
+                toastMessage({
+                  position: 'bottom',
+                  closeable: true,
+                  message: t('step:compiler.error'),
+                  status: 'error',
+                });
+              });
+          }, 1000);
+        } catch (e) {
+          console.error('Something went wrong when executing all steps', e);
+        }
+      } else {
+        setIsCompiling(false);
+      }
     }
   };
 
@@ -123,10 +126,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   useEffect(() => {
-    if (
-      session?.stepExecutions[Object.keys(session.stepExecutions)[flow.steps.length - 1]]?.state !==
-      StepExecutionStateEnum.DONE
-    ) {
+    if (submitCount === 1) {
       executeAllSteps(0);
     }
   }, []);
@@ -203,7 +203,12 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
 
         <div className="flex justify-between mt-32">
           <div>
-            <Button variant="secondary" onClick={() => handleChangeStep(currentStep - 1)} leftIcon={<ArrowLeft />}>
+            <Button
+              variant="secondary"
+              onClick={() => handleChangeStep(currentStep - 1)}
+              leftIcon={<ArrowLeft />}
+              data-cy="go-back-button"
+            >
               {t('step:go_back')}
             </Button>
           </div>

@@ -37,6 +37,16 @@ export const createSession: (flowId: string, flowVersion: number) => Promise<Ses
   }
 };
 
+export const deleteSession: (sessionId: string) => Promise<number> = async (sessionId) => {
+  try {
+    const res = await apiService.deleteRequest<ApiResponse<number>>(`session/${sessionId}`);
+    return res.data.data;
+  } catch (e) {
+    console.error('Something went wrong when deleting session', e);
+    return 500;
+  }
+};
+
 export const addSessionInput: (
   sessionId: string,
   inputData: {

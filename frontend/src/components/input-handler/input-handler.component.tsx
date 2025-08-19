@@ -13,7 +13,7 @@ import {
 import { useFormContext } from 'react-hook-form';
 import { useSession } from '@services/session-service/use-session';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { addSessionInput, createSession } from '@services/session-service/session-service';
+import { addSessionInput, createSession, deleteSession } from '@services/session-service/session-service';
 import { useTranslation } from 'next-i18next';
 import { Helper } from '@components/helper/helper.component';
 import { InputValidationError } from '@components/input-handler/input-validation-error/input-validation-error.component';
@@ -21,6 +21,9 @@ import { InputValidationError } from '@components/input-handler/input-validation
 interface InputHandlerProps {
   currentStep: number;
   handleChangeStep: (number: number) => void;
+  setCompilerStepIndex: (number: number) => void;
+  submitCount: number;
+  setSubmitCount: (number: number) => void;
 }
 
 interface FormModel {
@@ -31,11 +34,11 @@ interface FormModel {
 }
 
 export const InputHandler: React.FC<InputHandlerProps> = (props) => {
-  const { currentStep, handleChangeStep } = props;
+  const { currentStep, handleChangeStep, setCompilerStepIndex, submitCount, setSubmitCount } = props;
   const toastMessage = useSnackbar();
   const { t } = useTranslation();
   const { flow } = useFlowStore();
-  const { refresh: refreshSession, setData } = useSession();
+  const { data, refresh: refreshSession, setData } = useSession();
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const { showConfirmation } = useConfirm();
 
@@ -46,7 +49,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
     getValues,
     handleSubmit,
     reset,
-    formState: { errors, isDirty, submitCount },
+    formState: { errors, isDirty },
   } = useFormContext<FormModel>();
 
   const { attachmentInput } = watch();
@@ -70,13 +73,20 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
       ).then(async (confirm: boolean) => {
         if (confirm) {
           setIsSaving(true);
-          await createSession(flow.id, flow.version).then((res) => {
-            setData(res);
-            refreshSession(res.id);
-            handleNewSessionInput(res.id);
-          });
+          await deleteSession(data.id)
+            .then(() => {
+              setCompilerStepIndex(0);
+            })
+            .then(async () => {
+              await createSession(flow.id, flow.version).then((res) => {
+                setData(res);
+                handleNewSessionInput(res.id);
+                refreshSession(res.id);
+              });
+            });
         } else {
           reset(getValues().currentFormState);
+          setSubmitCount(submitCount + 1);
           handleChangeStep(currentStep + 1);
         }
       });
@@ -108,6 +118,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
       });
     refreshSession(newSessionId);
     setIsSaving(false);
+    setSubmitCount(1);
     handleChangeStep(currentStep + 1);
   };
 
