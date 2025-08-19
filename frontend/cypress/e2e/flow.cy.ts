@@ -1,6 +1,7 @@
 import { meUser } from '../fixtures/me-user';
 import { flows, flow } from '../fixtures/flows';
 import {
+  deleteSessionResponse,
   inputValue,
   sessionWithoutOutput,
   sessionWithOutput,
@@ -26,6 +27,7 @@ describe('Can use AI-sammanställningar', () => {
     cy.intercept('GET', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step1', stepExecution1);
     cy.intercept('GET', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step2', stepExecution2);
     cy.intercept('GET', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step3', stepExecution3);
+    cy.intercept('DELETE', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', deleteSessionResponse);
 
     cy.intercept('POST', '**/api/session/**/generate', {
       statusCode: 200,
@@ -69,6 +71,21 @@ describe('Can use AI-sammanställningar', () => {
     cy.get('[data-cy="generate"]').click();
     cy.get('[data-cy="save-document"]').should('be.disabled');
     cy.wait('@sessionWithOutput');
+
+    // Can step back to form and change input
+    cy.get('[data-cy="go-back-button"]').should('exist').click();
+    flow.data.input.map((input) => {
+      if (input.type === 'TEXT' || input.type === 'STRING') {
+        cy.get(`[data-cy="${input.id}"]`).clear().type('New mock text');
+      }
+    });
+
+    cy.get('[data-cy="generate"]').click();
+    cy.get('.sk-dialog .sk-btn-primary').should('have.text', 'Ja, generera om').click();
+
+    cy.get('[data-cy="save-document"]').should('be.disabled');
+    cy.wait('@sessionWithOutput');
+
     cy.get('[data-cy="save-document"]').should('not.be.disabled').click();
 
     // Save document
