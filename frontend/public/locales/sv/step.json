@@ -16,6 +16,12 @@
     "error": {
       "validation": "Detta fält måste fyllas i",
       "on_submit" : "Något gick fel vid tillägg av uppgifter"
+    },
+    "confirmation": {
+      "title": "Vill du generera om sammanställningen?",
+      "message": "Du har ändrat uppgifter i formuläret och sammanställningen kommer att behöva genereras om.",
+      "confirm_label" : "Ja, generera om",
+      "dismiss_label" : "Nej, använd ursprunglig version"
     }
   },
   "compiler" : {

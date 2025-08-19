@@ -73,6 +73,7 @@ export interface Flow {
   defaultTemplateId: string;
   input: FlowInput[];
   steps: Step[];
+  version: number;
 }
 
 export interface FlowInput {

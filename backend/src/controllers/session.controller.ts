@@ -1,5 +1,5 @@
 import ApiService from '@services/api.service';
-import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
+import { Body, Controller, Delete, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { ChatRequest, CreateSessionRequest, Output, Session, SimpleInput, StepExecution } from '@/data-contracts/aiflow/data-contracts';
@@ -33,6 +33,15 @@ export class SessionController {
   async fetchSession(@Req() req: RequestWithUser, @Param('sessionId') sessionId: string): Promise<ResponseData<Session>> {
     const url = `${this.baseUrl}/session/${sessionId}`;
     const res = await this.apiService.get<Session>({ url }, req.user);
+    return { data: res.data, message: 'success' };
+  }
+
+  @Delete('/session/:sessionId')
+  @OpenAPI({ summary: 'Delete session' })
+  @UseBefore(authMiddleware)
+  async deleteSession(@Req() req: RequestWithUser, @Param('sessionId') sessionId: string): Promise<ResponseData<number>> {
+    const url = `${this.baseUrl}/session/${sessionId}`;
+    const res = await this.apiService.delete<number>({ url }, req.user);
     return { data: res.data, message: 'success' };
   }
 
