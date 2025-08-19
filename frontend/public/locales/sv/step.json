@@ -36,6 +36,7 @@
       "title": "Sammanställ delar för dokument",
       "text": "Hjälptext för sammanställning av delar"
     },
+    "specific_step_error" : "Någonting gick fel, vänligen börja om och försök igen. Om felet kvarstår, kontakta IT-support",
     "give_instruction_info" : "Ange instruktion för att generera om steg"
   },
   "document_generator" : {
