@@ -74,7 +74,7 @@ describe('Can use AI-sammanställningar', () => {
 
     // Can step back to form and change input
     cy.get('[data-cy="go-back-button"]').should('exist').click();
-    flow.data.input.map((input) => {
+    flow.data.input.forEach((input) => {
       if (input.type === 'TEXT' || input.type === 'STRING') {
         cy.get(`[data-cy="${input.id}"]`).clear().type('New mock text');
       }
