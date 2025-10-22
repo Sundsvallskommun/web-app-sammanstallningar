@@ -27,6 +27,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   const { register, getValues } = useForm();
   const [isCompiling, setIsCompiling] = useState<boolean>(true);
   const [isReRunningStep, setIsReRunningStep] = useState<boolean[]>([]);
+  const [intervalId, setIntervalId] = useState(null);
 
   const handleReRunningStepsLoading = (index: number) => {
     const steps = [...isReRunningStep];
@@ -39,7 +40,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
     setStepIndex(index);
 
     if (session.id) {
-      if (index === 0) {
+      if (index === 0 && submitCount === 1) {
         runAllSteps(session.id)
           .then(() => refreshSession(session.id))
           .catch(() => {
@@ -55,14 +56,15 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
       if (index < flow.steps.length) {
         try {
           const interval = setInterval(async () => {
+            setIntervalId(interval);
             await getStepExecution(session.id, flow.steps[index].id)
               .then((executedStep: StepExecution) => {
                 if (executedStep.state === StepExecutionStateEnum.DONE) {
                   clearInterval(interval);
                   executeAllSteps(index + 1);
                 } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                    clearInterval(interval);
-                    toastMessage({
+                  clearInterval(interval);
+                  toastMessage({
                     position: 'bottom',
                     closeable: true,
                     message: t('step:compiler.specific_step_error'),
@@ -132,9 +134,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   useEffect(() => {
-    if (submitCount === 1) {
-      executeAllSteps(0);
-    }
+    executeAllSteps(0);
   }, []);
 
   useEffect(() => {
@@ -211,7 +211,10 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
           <div>
             <Button
               variant="secondary"
-              onClick={() => handleChangeStep(currentStep - 1)}
+              onClick={() => {
+                clearInterval(intervalId);
+                handleChangeStep(currentStep - 1);
+              }}
               leftIcon={<ArrowLeft />}
               data-cy="go-back-button"
             >
