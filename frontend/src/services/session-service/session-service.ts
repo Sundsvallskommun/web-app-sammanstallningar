@@ -127,7 +127,7 @@ export const addSessionInput: (
     : [];
 
   return Promise.all([...stringInputPromises, ...textInputPromises, ...attachmentInputPromises]).then((results) =>
-    results.every((r) => r)
+    results.every(Boolean)
   );
 };
 

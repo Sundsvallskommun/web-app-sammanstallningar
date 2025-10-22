@@ -92,14 +92,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   const reRunStep = (stepId: string, index: number) => {
-    if (!getValues(`input-${index}`)) {
-      toastMessage({
-        position: 'bottom',
-        closeable: true,
-        message: t('step:compiler.give_instruction_info'),
-        status: 'info',
-      });
-    } else {
+    if (getValues(`input-${index}`)) {
       handleReRunningStepsLoading(index);
       runStep(session.id, stepId, getValues(`input-${index}`))
         .then(() => {
@@ -130,6 +123,13 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
           setIsReRunningStep([]);
           refreshSession(session.id);
         });
+    } else {
+      toastMessage({
+        position: 'bottom',
+        closeable: true,
+        message: t('step:compiler.give_instruction_info'),
+        status: 'info',
+      });
     }
   };
 

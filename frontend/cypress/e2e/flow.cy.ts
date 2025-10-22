@@ -74,11 +74,11 @@ describe('Can use AI-sammanställningar', () => {
 
     // Can step back to form and change input
     cy.get('[data-cy="go-back-button"]').should('exist').click();
-    flow.data.input.forEach((input) => {
+    for (const input of flow.data.input) {
       if (input.type === 'TEXT' || input.type === 'STRING') {
         cy.get(`[data-cy="${input.id}"]`).clear().type('New mock text');
       }
-    });
+    }
 
     cy.get('[data-cy="generate"]').click();
     cy.get('.sk-dialog .sk-btn-primary').should('have.text', 'Ja, generera om').click();
