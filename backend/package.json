@@ -20,7 +20,7 @@
     "deploy:dev": "pm2 start ecosystem.config.js --only dev"
   },
   "dependencies": {
-    "@node-saml/passport-saml": "^5.0.1",
+    "@node-saml/passport-saml": "^5.1.0",
     "@prisma/client": "^5.12.1",
     "@types/multer": "^1.4.12",
     "axios": "^1.7.9",
