@@ -6,6 +6,7 @@ import { createSession, getSession, useSessionStore } from '@services/session-se
 
 export const useSession = (): {
   data: Session;
+  setData: (data: Session) => void;
   loaded: boolean;
   setLoaded: (boolean: boolean) => void;
   loading: boolean;
@@ -54,5 +55,5 @@ export const useSession = (): {
     }
   }, [user]);
 
-  return { data, loaded, setLoaded, loading, refresh };
+  return { data, setData, loaded, setLoaded, loading, refresh };
 };

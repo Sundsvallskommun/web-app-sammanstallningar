@@ -94,3 +94,10 @@ export const stepExecution3 = {
   },
   message: 'success',
 };
+
+export const deleteSessionResponse = {
+  data: {
+    status: 200,
+  },
+  message: 'success',
+};

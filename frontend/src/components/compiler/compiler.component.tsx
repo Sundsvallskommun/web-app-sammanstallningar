@@ -13,18 +13,21 @@ import sanitized from '@utils/sanitizer';
 interface CompilerProps {
   currentStep: number;
   handleChangeStep: (number: number) => void;
+  stepIndex: number;
+  setStepIndex: (number: number) => void;
+  submitCount: number;
 }
 
 export const Compiler: React.FC<CompilerProps> = (props) => {
-  const { currentStep, handleChangeStep } = props;
+  const { currentStep, handleChangeStep, stepIndex, setStepIndex, submitCount } = props;
   const { t } = useTranslation();
   const toastMessage = useSnackbar();
   const { flow } = useFlowStore();
   const { data: session, refresh: refreshSession } = useSession();
-  const [stepIndex, setStepIndex] = useState<number>();
   const { register, getValues } = useForm();
-  const [isCompiling, setIsCompiling] = useState<boolean>(false);
+  const [isCompiling, setIsCompiling] = useState<boolean>(true);
   const [isReRunningStep, setIsReRunningStep] = useState<boolean[]>([]);
+  const [intervalId, setIntervalId] = useState(null);
 
   const handleReRunningStepsLoading = (index: number) => {
     const steps = [...isReRunningStep];
@@ -33,67 +36,63 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   const executeAllSteps = (index: number) => {
+    refreshSession(session.id);
     setStepIndex(index);
 
-    if (index === 0) {
-      setIsCompiling(true);
-
-      runAllSteps(session.id)
-        .then(() => refreshSession(session.id))
-        .catch(() => {
-          toastMessage({
-            position: 'bottom',
-            closeable: true,
-            message: t('step:compiler.error'),
-            status: 'error',
+    if (session.id) {
+      if (index === 0 && submitCount === 1) {
+        runAllSteps(session.id)
+          .then(() => refreshSession(session.id))
+          .catch(() => {
+            toastMessage({
+              position: 'bottom',
+              closeable: true,
+              message: t('step:compiler.error'),
+              status: 'error',
+            });
           });
-        });
-    }
+      }
 
-    if (index < flow.steps.length) {
-      try {
-        const interval = setInterval(async () => {
-          await getStepExecution(session.id, flow.steps[index].id)
-            .then((executedStep: StepExecution) => {
-              if (executedStep.state === StepExecutionStateEnum.DONE) {
+      if (index < flow.steps.length) {
+        try {
+          const interval = setInterval(async () => {
+            setIntervalId(interval);
+            await getStepExecution(session.id, flow.steps[index].id)
+              .then((executedStep: StepExecution) => {
+                if (executedStep.state === StepExecutionStateEnum.DONE) {
+                  clearInterval(interval);
+                  executeAllSteps(index + 1);
+                } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
+                  clearInterval(interval);
+                  toastMessage({
+                    position: 'bottom',
+                    closeable: true,
+                    message: t('step:compiler.specific_step_error'),
+                    status: 'error',
+                  });
+                }
+              })
+              .catch(() => {
                 clearInterval(interval);
-                executeAllSteps(index + 1);
-              } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
                 toastMessage({
                   position: 'bottom',
                   closeable: true,
-                  message: t('step:compiler.specific_step_error'),
+                  message: t('step:compiler.error'),
                   status: 'error',
                 });
-                clearInterval(interval);
-              }
-            })
-            .catch(() => {
-              toastMessage({
-                position: 'bottom',
-                closeable: true,
-                message: t('step:compiler.error'),
-                status: 'error',
               });
-            });
-        }, 1000);
-      } catch (e) {
-        console.error('Something went wrong when executing all steps', e);
+          }, 1000);
+        } catch (e) {
+          console.error('Something went wrong when executing all steps', e);
+        }
+      } else {
+        setIsCompiling(false);
       }
-    } else {
-      setIsCompiling(false);
     }
   };
 
   const reRunStep = (stepId: string, index: number) => {
-    if (!getValues(`input-${index}`)) {
-      toastMessage({
-        position: 'bottom',
-        closeable: true,
-        message: t('step:compiler.give_instruction_info'),
-        status: 'info',
-      });
-    } else {
+    if (getValues(`input-${index}`)) {
       handleReRunningStepsLoading(index);
       runStep(session.id, stepId, getValues(`input-${index}`))
         .then(() => {
@@ -124,16 +123,18 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
           setIsReRunningStep([]);
           refreshSession(session.id);
         });
+    } else {
+      toastMessage({
+        position: 'bottom',
+        closeable: true,
+        message: t('step:compiler.give_instruction_info'),
+        status: 'info',
+      });
     }
   };
 
   useEffect(() => {
-    if (
-      session?.stepExecutions[Object.keys(session.stepExecutions)[flow.steps.length - 1]]?.state !==
-      StepExecutionStateEnum.DONE
-    ) {
-      executeAllSteps(0);
-    }
+    executeAllSteps(0);
   }, []);
 
   useEffect(() => {
@@ -208,7 +209,15 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
 
         <div className="flex justify-between mt-32">
           <div>
-            <Button variant="secondary" onClick={() => handleChangeStep(currentStep - 1)} leftIcon={<ArrowLeft />}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                clearInterval(intervalId);
+                handleChangeStep(currentStep - 1);
+              }}
+              leftIcon={<ArrowLeft />}
+              data-cy="go-back-button"
+            >
               {t('step:go_back')}
             </Button>
           </div>

@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFlows } from '@services/flow-service/use-flows';
 import { Card, useSnackbar } from '@sk-web-gui/react';
 import { getFlow, useFlowStore } from '@services/flow-service/flow-service';
-import { useSession } from '@services/session-service/use-session';
 import { useTranslation } from 'next-i18next';
+import { useFormContext } from 'react-hook-form';
 
 interface FlowPickerProps {
   currentStep: number;
@@ -14,10 +14,14 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   const { handleChangeStep, currentStep } = props;
   const { t } = useTranslation();
   const toastMessage = useSnackbar();
+  const { reset } = useFormContext();
+
+  useEffect(() => {
+    reset();
+  }, []);
 
   const { flows } = useFlows();
   const { setFlow } = useFlowStore();
-  const { refresh: refreshSession } = useSession();
 
   const handleFlowPick = (id: string, version: number) => {
     if (id && version) {
@@ -26,7 +30,6 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
           res && setFlow(res);
         })
         .then(() => {
-          refreshSession(null, id, version);
           handleChangeStep(currentStep + 1);
         })
         .catch(() => {
