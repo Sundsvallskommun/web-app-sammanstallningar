@@ -128,6 +128,8 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
     setValue(field, fieldAttachments);
   };
 
+  console.log(getValues());
+
   return (
     flow && (
       <FormControl onSubmit={onSubmit} className="w-full">
@@ -139,10 +141,6 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
         <div className="grid grid-cols-2 w-full gap-24 px-24 pt-32 pb-24 bg-background-100 rounded-cards border-1 border-divider">
           {flow.input &&
             flow.input.map((input, index) => {
-              if (input.type === 'FILE') {
-                register(`attachmentInput.${input.id}`, { required: !input.optional });
-              }
-
               return (
                 <div className={input.type === 'STRING' ? 'col-span-2' : 'col-span-1'} key={index}>
                   <FormLabel className="block mb-8">{input.name}</FormLabel>
@@ -181,9 +179,9 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                       ) ?
                         <div className="h-[116px] mb-16">
                           <FileUpload.Field
+                            {...register(`attachmentInput.${input.id}`, { required: !input.optional })}
                             name={`attachmentInput.${input.id}`}
                             variant="horizontal"
-                            children={<></>}
                             maxFileSizeMB={25}
                             invalid={false}
                             data-cy={input.id}

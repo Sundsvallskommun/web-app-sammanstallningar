@@ -51,10 +51,8 @@ export default function DefaultLayout({
           <meta name="description" content={`${process.env.NEXT_PUBLIC_APP_NAME}`} />
         </Head>
 
-        <NextLink href="#content" legacyBehavior passHref>
-          <a onClick={setFocusToMain} accessKey="s" className="next-link-a" data-cy="systemMessage-a">
-            {t('layout:header.goto_content')}
-          </a>
+        <NextLink onClick={setFocusToMain} className="next-link-a" href="#content" data-cy="systemMessage-a">
+          {t('layout:header.goto_content')}
         </NextLink>
 
         <Header
@@ -63,7 +61,6 @@ export default function DefaultLayout({
           subtitle="Sundsvalls kommun"
           aria-label={`${headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME} ${headerSubtitle}`}
           logoLinkOnClick={handleLogoClick}
-          LogoLinkWrapperComponent={<NextLink legacyBehavior href={logoLinkHref} passHref />}
         >
           <UserMenu
             initials={`${user.givenName?.[0]}${user.surname?.[0]}`}
@@ -92,7 +89,7 @@ export default function DefaultLayout({
         body={
           <p>
             {t('layout:cookies.description')}{' '}
-            <NextLink href="/kakor" passHref legacyBehavior>
+            <NextLink href="/kakor">
               <Link>{t('layout:cookies.read_more')}</Link>
             </NextLink>
           </p>
