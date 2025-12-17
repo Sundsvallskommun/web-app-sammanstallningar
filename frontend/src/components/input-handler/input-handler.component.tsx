@@ -128,8 +128,6 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
     setValue(field, fieldAttachments);
   };
 
-  console.log(getValues());
-
   return (
     flow && (
       <FormControl onSubmit={onSubmit} className="w-full">
