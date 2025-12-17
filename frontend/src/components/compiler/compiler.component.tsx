@@ -36,10 +36,10 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   const executeAllSteps = (index: number) => {
-    refreshSession(session.id);
+    refreshSession(session?.id);
     setStepIndex(index);
 
-    if (session.id) {
+    if (session?.id) {
       if (index === 0 && submitCount === 1) {
         runAllSteps(session.id)
           .then(() => refreshSession(session.id))
@@ -138,7 +138,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    refreshSession(session.id);
+    refreshSession(session?.id);
   }, [stepIndex, isCompiling]);
 
   return (
