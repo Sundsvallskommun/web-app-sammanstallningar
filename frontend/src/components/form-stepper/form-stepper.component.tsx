@@ -27,6 +27,7 @@ export const FormStepper: React.FC<FormStepperProps> = (props) => {
             current={currentStep}
             rounded={false}
             size="md"
+            labelPosition="bottom"
           />
         </div>
       </div>
