@@ -6,6 +6,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Textarea,
   UploadFile,
   useConfirm,
   useSnackbar,
@@ -189,8 +190,8 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                         </div>
                       : null}
                     </>
-                  : <textarea
-                      className="w-full text-base border-divider rounded-cards resize-none py-12 px-16"
+                  : <Textarea
+                      className="w-full text-base border-divider rounded-cards resize-none"
                       rows={4}
                       {...register(`textInput.${input.id}`, {
                         required: !input.optional,
