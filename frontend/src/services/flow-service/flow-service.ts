@@ -20,9 +20,9 @@ export const getFlow: (name: string, version: number) => Promise<Flow> = async (
     .then((res) => {
       return res.data.data;
     })
-    .catch(() => {
+    .catch((e) => {
       console.error('Something went wrong');
-      return {} as Flow;
+      throw e;
     });
 };
 

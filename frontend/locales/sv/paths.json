@@ -1,0 +1,10 @@
+{
+  "/start": {
+    "title": "Skapa sammanställning",
+    "description": "Skapa sammanställning"
+  },
+  "/login": {
+    "title": "Logga in",
+    "description": "Logga in till sammanställningar"
+  }
+}

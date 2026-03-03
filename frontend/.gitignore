@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+/cypress/downloads/
+
 
 # next.js
 /.next
@@ -15,6 +17,11 @@
 # production
 /build
 /tsconfig.tsbuildinfo
+
+# quirks
+# middleware envs needs to be generated for edge runtime to work
+./middleware-envs.js
+middleware-envs.js
 
 # misc
 .DS_Store

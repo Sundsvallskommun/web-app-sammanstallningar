@@ -6,23 +6,13 @@ import { useUserStore } from '@services/user-service/user-service';
 
 export const useFlows = (): {
   flows: FlowSummary[];
-  flow: Flow;
   loaded: boolean;
   loading: boolean;
   refresh: () => void;
 } => {
   const user = useUserStore(useShallow((s) => s.user));
-  const [flows, flow, setFlows, setFlow, loaded, setLoaded, loading, setLoading] = useFlowStore(
-    useShallow((state) => [
-      state.flows,
-      state.flow,
-      state.setFlows,
-      state.setFlow,
-      state.loaded,
-      state.setLoaded,
-      state.loading,
-      state.setLoading,
-    ])
+  const [flows, setFlows, loaded, setLoaded, loading, setLoading] = useFlowStore(
+    useShallow((state) => [state.flows, state.setFlows, state.loaded, state.setLoaded, state.loading, state.setLoading])
   );
 
   const refresh = () => {
@@ -52,5 +42,5 @@ export const useFlows = (): {
     }
   }, [user]);
 
-  return { flows, flow, loaded, loading, refresh };
+  return { flows, loaded, loading, refresh };
 };

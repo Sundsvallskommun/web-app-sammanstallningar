@@ -1,3 +1,6 @@
+'use client';
+
+import { ConfirmationDialogContextProvider } from '@sk-web-gui/react';
 import { createContext, useContext, useState } from 'react';
 
 export interface AppContextInterface {
@@ -27,7 +30,7 @@ export function AppWrapper({ children }) {
         setDefaults,
       }}
     >
-      {children}
+      <ConfirmationDialogContextProvider>{children}</ConfirmationDialogContextProvider>
     </AppContext.Provider>
   );
 }

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Router from 'next/router';
 
 export interface Data {
   error?: string;
@@ -27,10 +26,10 @@ const handleError = (error) => {
   }
   s += ` for url ${error?.config?.url}`;
   console.error(s);
-
-  if (error?.response?.status === 401 && Router.pathname !== '/login') {
+  const basePath = process.env?.NEXT_PUBLIC_BASE_PATH ?? '';
+  if (error?.response?.status === 401 && !globalThis?.location.pathname.startsWith(`${basePath}/login`)) {
     // isRedirectingToLogin = true;
-    Router.push('/login');
+    globalThis.location.href = `${basePath}/login?path=${globalThis.location.pathname}&failMessage=${error.response.data.message}`;
   }
 
   throw error;

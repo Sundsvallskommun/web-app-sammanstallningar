@@ -1,5 +1,4 @@
 const envalid = require('envalid');
-const { i18n } = require('./next-i18next.config');
 
 const authDependent = envalid.makeValidator((x) => {
   const authEnabled = process.env.HEALTH_AUTH === 'true';
@@ -24,18 +23,22 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 module.exports = withBundleAnalyzer({
   output: 'standalone',
-  i18n,
   images: {
     domains: [process.env.DOMAIN_NAME],
     formats: ['image/avif', 'image/webp'],
   },
-  basePath: process.env.BASE_PATH,
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH,
   sassOptions: {
-    prependData: `$basePath: '${process.env.BASE_PATH}';`,
+    prependData: `$basePath: '${process.env.NEXT_PUBLIC_BASE_PATH}';`,
   },
-  transpilePackages: ['lucide-react'],
+  transpilePackages: ['lucide-react', '@sk-web-gui/react', '@sk-web-gui/core', '@sk-web-gui/next', '@sk-web-gui/ai'],
   experimental: {
-    optimizePackageImports: ['lucide-react', '@sk-web-gui'],
+    turbopack: {
+      resolveAlias: {
+        '@': './src',
+      },
+    },
+    optimizePackageImports: ['@sk-web-gui', 'lucide-react'],
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];

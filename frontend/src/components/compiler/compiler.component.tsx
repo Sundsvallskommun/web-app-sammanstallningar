@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useFlowStore } from '@services/flow-service/flow-service';
 import { Button, Disclosure, Divider, Spinner, TextField, useSnackbar } from '@sk-web-gui/react';
 import { ArrowLeft, ArrowRight, IterationCcw } from 'lucide-react';
@@ -28,7 +28,8 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   const [isCompiling, setIsCompiling] = useState<boolean>(true);
   const [isReRunningStep, setIsReRunningStep] = useState<boolean[]>([]);
   const [intervalId, setIntervalId] = useState(null);
-
+  const [open, setOpen] = useState<{ [key: number]: boolean }>({ 0: true });
+  const interval = useRef<NodeJS.Timeout | null>(null);
   const handleReRunningStepsLoading = (index: number) => {
     const steps = [...isReRunningStep];
     steps[index] = true;
@@ -55,15 +56,15 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
 
       if (index < flow.steps.length) {
         try {
-          const interval = setInterval(async () => {
+          interval.current = setInterval(async () => {
             setIntervalId(interval);
             await getStepExecution(session.id, flow.steps[index].id)
               .then((executedStep: StepExecution) => {
                 if (executedStep.state === StepExecutionStateEnum.DONE) {
-                  clearInterval(interval);
+                  clearInterval(interval.current);
                   executeAllSteps(index + 1);
                 } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                  clearInterval(interval);
+                  clearInterval(interval.current);
                   toastMessage({
                     position: 'bottom',
                     closeable: true,
@@ -73,7 +74,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                 }
               })
               .catch(() => {
-                clearInterval(interval);
+                clearInterval(interval.current);
                 toastMessage({
                   position: 'bottom',
                   closeable: true,
@@ -97,13 +98,13 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
       runStep(session.id, stepId, getValues(`input-${index}`))
         .then(() => {
           try {
-            const interval = setInterval(async () => {
+            interval.current = setInterval(async () => {
               await getStepExecution(session.id, stepId)
                 .then((executedStep: StepExecution) => {
                   if (executedStep.state === StepExecutionStateEnum.DONE) {
-                    clearInterval(interval);
+                    clearInterval(interval.current);
                   } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                    clearInterval(interval);
+                    clearInterval(interval.current);
                   }
                 })
                 .catch(() => {
@@ -135,6 +136,10 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
 
   useEffect(() => {
     executeAllSteps(0);
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(interval.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -166,40 +171,46 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                     </div>
                   )}
                   <Disclosure
-                    header={input.order + '. ' + input.name}
-                    open={index === 0}
+                    open={open[index]}
+                    onToggleOpen={(open) => setOpen((old) => ({ ...old, [index]: open }))}
                     disabled={session.stepExecutions[flow.steps[index].id]?.state !== StepExecutionStateEnum.DONE}
                   >
-                    {session.stepExecutions[flow.steps[index].id]?.state === StepExecutionStateEnum.DONE ?
-                      <div className="w-2/3">
-                        <span
-                          className="text-large my-0 [&>*>ul]:list-disc [&>*>ul]:ml-lg [&>*>li]:list-disc [&>*>li]:ml-lg [&>*>ol]:list-decimal [&>*>ol]:ml-lg"
-                          dangerouslySetInnerHTML={{
-                            __html: `${sanitized(session.stepExecutions[flow.steps[index].id]?.output)}`,
-                          }}
-                        ></span>
+                    <Disclosure.Header>
+                      <Disclosure.Title>{input.order + '. ' + input.name}</Disclosure.Title>
+                      <Disclosure.Button />
+                    </Disclosure.Header>
+                    <Disclosure.Content>
+                      {session.stepExecutions[flow.steps[index].id]?.state === StepExecutionStateEnum.DONE ?
+                        <div className="w-2/3">
+                          <span
+                            className="text-large my-0 [&>*>ul]:list-disc [&>*>ul]:ml-lg [&>*>li]:list-disc [&>*>li]:ml-lg [&>*>ol]:list-decimal [&>*>ol]:ml-lg"
+                            dangerouslySetInnerHTML={{
+                              __html: `${sanitized(session.stepExecutions[flow.steps[index].id]?.output)}`,
+                            }}
+                          ></span>
 
-                        <div className="flex w-full gap-10 pt-20">
-                          <TextField
-                            {...register(`input-${index}`)}
-                            className="w-full"
-                            size="sm"
-                            placeholder={t('step:compiler.generate_again_placeholder')}
-                          />
-                          <Button
-                            onClick={() => reRunStep(input.id, index)}
-                            size="sm"
-                            leftIcon={<IterationCcw />}
-                            color="vattjom"
-                            loading={isReRunningStep[index]}
-                            rounded
-                            inverted
-                          >
-                            {t('step:compiler.generate_again')}
-                          </Button>
+                          <div className="flex w-full gap-10 pt-20">
+                            <TextField
+                              {...register(`input-${index}`)}
+                              className="w-full"
+                              size="sm"
+                              placeholder={t('step:compiler.generate_again_placeholder')}
+                            />
+                            <Button
+                              onClick={() => reRunStep(input.id, index)}
+                              size="sm"
+                              leftIcon={<IterationCcw />}
+                              color="vattjom"
+                              loading={isReRunningStep[index]}
+                              rounded
+                              inverted
+                            >
+                              {t('step:compiler.generate_again')}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    : <p>{t('step:compiler.generating_data')}</p>}
+                      : <p>{t('step:compiler.generating_data')}</p>}
+                    </Disclosure.Content>
                   </Disclosure>
                   {index < flow.steps.length - 1 && <Divider />}
                 </div>

@@ -32,7 +32,11 @@ export class FlowController {
   @UseBefore(authMiddleware)
   async fetchFlow(@Req() req: RequestWithUser, @Param('flowName') flowName: string, @Param('version') version: string): Promise<ResponseData<Flow>> {
     const url = `${this.baseUrl}/flow/${flowName}/${version}`;
-    const res = await this.apiService.get<Flow>({ url }, req.user);
-    return { data: res.data, message: 'success' };
+    try {
+      const res = await this.apiService.get<Flow>({ url }, req.user);
+      return { data: res.data, message: 'success' };
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
