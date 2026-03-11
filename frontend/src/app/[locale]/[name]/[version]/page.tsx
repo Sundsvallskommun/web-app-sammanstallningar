@@ -24,8 +24,15 @@ function Index() {
   const { t } = useTranslation();
   const { name, version } = useParams();
   const router = useRouter();
+  const decodedName = (() => {
+    try {
+      return decodeURIComponent(name as string);
+    } catch {
+      return name as string;
+    }
+  })();
 
-  const { flow, loaded } = useFlow(name as string, Number.parseInt(version as string, 10));
+  const { flow, loaded } = useFlow(decodedName, Number.parseInt(version as string, 10));
 
   const methods = useForm<FormModel>({
     defaultValues: { attachmentInput: {} },

@@ -21,10 +21,24 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const domainName = process.env.DOMAIN_NAME;
+const shouldUseStandaloneOutput = process.env.NEXT_OUTPUT === 'standalone';
+
 module.exports = withBundleAnalyzer({
-  output: 'standalone',
+  output: shouldUseStandaloneOutput ? 'standalone' : undefined,
   images: {
-    domains: [process.env.DOMAIN_NAME],
+    remotePatterns: domainName
+      ? [
+          {
+            protocol: 'https',
+            hostname: domainName,
+          },
+          {
+            protocol: 'http',
+            hostname: domainName,
+          },
+        ]
+      : [],
     formats: ['image/avif', 'image/webp'],
   },
   basePath: process.env.NEXT_PUBLIC_BASE_PATH,
@@ -32,12 +46,12 @@ module.exports = withBundleAnalyzer({
     prependData: `$basePath: '${process.env.NEXT_PUBLIC_BASE_PATH}';`,
   },
   transpilePackages: ['lucide-react', '@sk-web-gui/react', '@sk-web-gui/core', '@sk-web-gui/next', '@sk-web-gui/ai'],
-  experimental: {
-    turbopack: {
-      resolveAlias: {
-        '@': './src',
-      },
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
     },
+  },
+  experimental: {
     optimizePackageImports: ['@sk-web-gui', 'lucide-react'],
   },
   async rewrites() {

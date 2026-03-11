@@ -3,8 +3,14 @@ import { i18nRouter } from 'next-i18n-router';
 import i18nConfig from '@app/i18nConfig';
 import { envs } from '../middleware-envs';
 
-export async function middleware(req: NextRequest) {
+const STATIC_FILE_REGEX = /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mjs|png|svg|txt|webmanifest|webp|woff|woff2|xml)$/i;
+
+export async function proxy(req: NextRequest) {
   const { pathname, origin } = req.nextUrl;
+
+  if (STATIC_FILE_REGEX.test(pathname)) {
+    return NextResponse.next();
+  }
 
   if (pathname === '/admin') {
     return NextResponse.redirect(new URL(envs.adminUrl));
@@ -35,5 +41,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: '/((?!api|static|.*\\..*|_next).*)',
+  matcher: '/((?!api|static|_next).*)',
 };

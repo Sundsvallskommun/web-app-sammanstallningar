@@ -22,7 +22,7 @@ export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
   const { flows } = useFlows();
 
   const handleFlowPick = (id: string, version: number) => {
-    router.push(`/${id}/${version}`);
+    router.push(`/${encodeURIComponent(id)}/${version}`);
   };
 
   return (

@@ -29,7 +29,11 @@ const handleError = (error) => {
   const basePath = process.env?.NEXT_PUBLIC_BASE_PATH ?? '';
   if (error?.response?.status === 401 && !globalThis?.location.pathname.startsWith(`${basePath}/login`)) {
     // isRedirectingToLogin = true;
-    globalThis.location.href = `${basePath}/login?path=${globalThis.location.pathname}&failMessage=${error.response.data.message}`;
+    const queries = new URLSearchParams({
+      path: globalThis.location.pathname,
+      failMessage: error.response.data.message,
+    });
+    globalThis.location.href = `${basePath}/login?${queries.toString()}`;
   }
 
   throw error;
