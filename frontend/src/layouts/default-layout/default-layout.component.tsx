@@ -1,9 +1,10 @@
-import { CookieConsent, Footer, Header, Link, Logo, UserMenu } from '@sk-web-gui/react';
-import Head from 'next/head';
-import NextLink from 'next/link';
-import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
+'use client';
+
 import { useUserStore } from '@services/user-service/user-service';
+import { Footer, Header, Logo, UserMenu } from '@sk-web-gui/react';
+import { useTranslation } from 'next-i18next';
+import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 
 interface DefaultLayoutProps {
@@ -18,18 +19,13 @@ interface DefaultLayoutProps {
 }
 
 export default function DefaultLayout({
-  title,
-  postTitle,
-  headerTitle,
-  headerSubtitle,
   children,
   preContent = undefined,
   postContent = undefined,
   logoLinkHref = '/',
 }: DefaultLayoutProps) {
   const router = useRouter();
-  const layoutTitle = `${process.env.NEXT_PUBLIC_APP_NAME}${headerSubtitle ? ` - ${headerSubtitle}` : ''}`;
-  const fullTitle = postTitle ? `${layoutTitle} - ${postTitle}` : `${layoutTitle}`;
+
   const user = useUserStore(useShallow((s) => s.user));
 
   const { t } = useTranslation();
@@ -46,20 +42,15 @@ export default function DefaultLayout({
   return (
     <div className="DefaultLayout full-page-layout">
       <div className="flex z-40 shadow-100">
-        <Head>
-          <title>{title ? title : fullTitle}</title>
-          <meta name="description" content={`${process.env.NEXT_PUBLIC_APP_NAME}`} />
-        </Head>
-
         <NextLink onClick={setFocusToMain} className="next-link-a" href="#content" data-cy="systemMessage-a">
           {t('layout:header.goto_content')}
         </NextLink>
 
         <Header
           data-cy="nav-header"
-          title={headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME}
+          title={t('common:app_name')}
           subtitle="Sundsvalls kommun"
-          aria-label={`${headerTitle ? headerTitle : process.env.NEXT_PUBLIC_APP_NAME} ${headerSubtitle}`}
+          aria-label={t('common:app_name')}
           logoLinkOnClick={handleLogoClick}
         >
           <UserMenu
@@ -83,43 +74,6 @@ export default function DefaultLayout({
           </Footer.LogoWrapper>
         </Footer.Content>
       </Footer>
-
-      <CookieConsent
-        title={t('layout:cookies.title', { app: process.env.NEXT_PUBLIC_APP_NAME })}
-        body={
-          <p>
-            {t('layout:cookies.description')}{' '}
-            <NextLink href="/kakor">
-              <Link>{t('layout:cookies.read_more')}</Link>
-            </NextLink>
-          </p>
-        }
-        cookies={[
-          {
-            optional: false,
-            displayName: t('layout:cookies.necessary.displayName'),
-            description: t('layout:cookies.necessary.description'),
-            cookieName: 'necessary',
-          },
-          {
-            optional: true,
-            displayName: t('layout:cookies.func.displayName'),
-            description: t('layout:cookies.func.description'),
-            cookieName: 'func',
-          },
-          {
-            optional: true,
-            displayName: t('layout:cookies.stats.displayName'),
-            description: t('layout:cookies.stats.description'),
-            cookieName: 'stats',
-          },
-        ]}
-        resetConsentOnInit={false}
-        onConsent={() => {
-          // FIXME: do stuff with cookies?
-          // NO ANO FUNCTIONS
-        }}
-      />
     </div>
   );
 }

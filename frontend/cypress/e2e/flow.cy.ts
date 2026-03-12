@@ -41,8 +41,6 @@ describe('Can use AI-sammanställningar', () => {
 
     cy.viewport('macbook-15');
     cy.visit('http://localhost:3000/');
-
-    cy.get('.sk-cookie-consent-btn-wrapper').contains('Godkänn alla').click();
   });
 
   it('Can generate document of flow type', () => {

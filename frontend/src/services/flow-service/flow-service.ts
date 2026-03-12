@@ -16,13 +16,13 @@ export const getFlows: () => Promise<FlowSummary[]> = async () => {
 
 export const getFlow: (name: string, version: number) => Promise<Flow> = async (name: string, version: number) => {
   return apiService
-    .get<ApiResponse<Flow>>(`flow/${name}/${version}`)
+    .get<ApiResponse<Flow>>(`flow/${encodeURIComponent(name)}/${version}`)
     .then((res) => {
       return res.data.data;
     })
-    .catch(() => {
+    .catch((e) => {
       console.error('Something went wrong');
-      return {} as Flow;
+      throw e;
     });
 };
 

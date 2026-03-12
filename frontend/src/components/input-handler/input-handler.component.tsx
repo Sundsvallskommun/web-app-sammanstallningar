@@ -126,7 +126,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const handleRemoveUpload = (field, index: number) => {
     const fieldAttachments = getValues(field);
     fieldAttachments.splice(index, 1);
-    setValue(field, fieldAttachments);
+    setValue(field, fieldAttachments, { shouldDirty: true, shouldValidate: true });
   };
 
   return (
@@ -178,14 +178,19 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                       ) ?
                         <div className="h-[116px] mb-16">
                           <FileUpload.Field
-                            {...register(`attachmentInput.${input.id}`, { required: !input.optional })}
+                            {...register(`attachmentInput.${input.id}`, {
+                              validate: (value) => {
+                                const files = value ?? getValues(`attachmentInput.${input.id}`) ?? [];
+                                return input.optional || files.length > 0;
+                              },
+                            })}
                             name={`attachmentInput.${input.id}`}
                             variant="horizontal"
                             maxFileSizeMB={25}
                             invalid={false}
                             data-cy={input.id}
                             allowMultiple={input.multipleValued}
-                            appendFiles={attachmentInput[input.id]}
+                            appendFiles={attachmentInput?.[input.id] ?? []}
                           />
                         </div>
                       : null}
@@ -233,3 +238,5 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
     )
   );
 };
+
+

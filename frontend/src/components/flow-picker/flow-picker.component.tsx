@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
 import { useFlows } from '@services/flow-service/use-flows';
-import { Card, useSnackbar } from '@sk-web-gui/react';
-import { getFlow, useFlowStore } from '@services/flow-service/flow-service';
+import { Card } from '@sk-web-gui/react';
 import { useTranslation } from 'next-i18next';
+import { useRouter } from 'next/navigation';
+import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 interface FlowPickerProps {
@@ -11,36 +11,18 @@ interface FlowPickerProps {
 }
 
 export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
-  const { handleChangeStep, currentStep } = props;
   const { t } = useTranslation();
-  const toastMessage = useSnackbar();
   const { reset } = useFormContext();
+  const router = useRouter();
 
   useEffect(() => {
     reset();
   }, []);
 
   const { flows } = useFlows();
-  const { setFlow } = useFlowStore();
 
   const handleFlowPick = (id: string, version: number) => {
-    if (id && version) {
-      getFlow(id, version)
-        .then((res) => {
-          res && setFlow(res);
-        })
-        .then(() => {
-          handleChangeStep(currentStep + 1);
-        })
-        .catch(() => {
-          toastMessage({
-            position: 'bottom',
-            closeable: true,
-            message: t('step:flow_picker.error'),
-            status: 'error',
-          });
-        });
-    }
+    router.push(`/${encodeURIComponent(id)}/${version}`);
   };
 
   return (
