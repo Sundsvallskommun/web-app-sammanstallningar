@@ -133,7 +133,7 @@ describe('Can use AI-sammanställningar', () => {
   it('Shows and clears stale dependency warnings when earlier steps are rerun', () => {
     cy.get('[data-cy="flow-card-0"]').contains('Flow 1').click();
 
-    flow.data.input.map((input) => {
+    flow.data.input.forEach((input) => {
       if (input.type === 'TEXT' || input.type === 'STRING') {
         cy.get(`[data-cy="${input.id}"]`).type('Mock text');
       } else {
