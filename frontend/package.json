@@ -22,8 +22,8 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@next/bundle-analyzer": "^16.1.6",
-    "@sk-web-gui/core": "4.3.3",
-    "@sk-web-gui/react": "3.0.9",
+    "@sk-web-gui/core": "4.4.0",
+    "@sk-web-gui/react": "^3.0.11",
     "axios": "1.13.6",
     "dayjs": "^1.11.19",
     "i18next": "^25.8.17",

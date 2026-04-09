@@ -1601,6 +1601,16 @@
     "@sk-web-gui/utils" "2.2.2"
     lucide-react "^0.553.0"
 
+"@sk-web-gui/alert@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@sk-web-gui/alert/-/alert-1.1.2.tgz#697761a4ba641d86ac928dc6bcf67baba9091c61"
+  integrity sha512-U7zSEp+5F+Bn1IyzyCyfw25bSuJdh/Qn5lvPLb41pNX0J7YEd9me9rV3myPUH2S4tO/iyQuvvIOG3Hi36i+SEg==
+  dependencies:
+    "@sk-web-gui/button" "2.1.10"
+    "@sk-web-gui/icon" "3.1.2"
+    "@sk-web-gui/utils" "2.2.2"
+    lucide-react "0.537.0"
+
 "@sk-web-gui/avatar@1.2.4":
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/@sk-web-gui/avatar/-/avatar-1.2.4.tgz#0d8c98d17d3fdb23889a4380af4ddfd0ee9ac378"
@@ -1672,10 +1682,10 @@
     "@sk-web-gui/utils" "2.2.2"
     universal-cookie "^8.0.1"
 
-"@sk-web-gui/core@4.3.3":
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/@sk-web-gui/core/-/core-4.3.3.tgz#d6badc579eca85e6e9a94b6a1f3211eddd17d4fc"
-  integrity sha512-nSJUZoAYAn7VoxS3/YLj/f07ENpSFSNuZbeljQAvmqaYsQfqGozXZ6xzskOV89oHmXbQOCxOt2hBqgG8i5j/LQ==
+"@sk-web-gui/core@4.4.0":
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/@sk-web-gui/core/-/core-4.4.0.tgz#d361fe2f1f0633041a114b1ae5d14a38892e2780"
+  integrity sha512-KPY595eUicqDVPiB926iEX1+XG0+5BEre77RD3d5ELhfkmM4MJDoPWNfjL76plIsYV52qQMsWGkBbu6XUmLF5g==
   dependencies:
     "@sk-web-gui/theme" "2.7.1"
     "@tailwindcss/container-queries" "^0.1.1"
@@ -1848,12 +1858,13 @@
     "@sk-web-gui/utils" "2.2.2"
     lucide-react "^0.537.0"
 
-"@sk-web-gui/react@3.0.9":
-  version "3.0.9"
-  resolved "https://registry.yarnpkg.com/@sk-web-gui/react/-/react-3.0.9.tgz#f8d110b9a880d6f2def82d21be3c4083f2bc5186"
-  integrity sha512-Li60bWN5Nf42c9SnzF+M9ZppniV2TRhPvmMYIdoFytJ2Atru8bsF8WXm7808Sk2+1PBz310T2YrYKbo19nhfjA==
+"@sk-web-gui/react@^3.0.11":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@sk-web-gui/react/-/react-3.0.11.tgz#a6de330a3f0d5933d4a28687d74daaea8818b5de"
+  integrity sha512-e9xVGo+laiFrXc9E5LuqcpqH2tSDxL4gL2+kAQWKoXMyegsw7kDMYiQaR1SPcdZSPwztRc0fnfFnHf2QPPjCtQ==
   dependencies:
     "@sk-web-gui/accordion" "3.0.3"
+    "@sk-web-gui/alert" "1.1.2"
     "@sk-web-gui/avatar" "1.2.4"
     "@sk-web-gui/badge" "1.2.0"
     "@sk-web-gui/breadcrumb" "1.1.9"
@@ -5927,7 +5938,7 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-lucide-react@^0.537.0:
+lucide-react@0.537.0, lucide-react@^0.537.0:
   version "0.537.0"
   resolved "https://registry.yarnpkg.com/lucide-react/-/lucide-react-0.537.0.tgz#2752280dfd51e95456c35813837bc9e0b190303b"
   integrity sha512-VxWsdxBGeFnlC+HwMg/l08HptN4YRU9o/lRog156jOmRxI1ERKqN+rJiNY/mPcKAdWdM0UbyO8ft1o0jq69SSQ==
