@@ -64,7 +64,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   }, []);
 
   const onSubmit = async () => {
-    if (submitCount > 0 && isDirty) {
+    if (submitCount > 0 && isDirty && flow) {
       showConfirmation(
         t('step:input_handler.confirmation.title'),
         t('step:input_handler.confirmation.message'),
@@ -72,7 +72,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
         t('step:input_handler.confirmation.dismiss_label'),
         'info'
       ).then(async (confirm: boolean) => {
-        if (confirm) {
+        if (confirm && data?.id) {
           setIsSaving(true);
           await deleteSession(data.id)
             .then(() => {
@@ -91,7 +91,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
           handleChangeStep(currentStep + 1);
         }
       });
-    } else if (isDirty) {
+    } else if (isDirty && flow) {
       setIsSaving(true);
       await createSession(flow.id, flow.version).then((res) => {
         setData(res);
@@ -226,7 +226,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
               variant="primary"
               onClick={handleSubmit(onSubmit)}
               color="vattjom"
-              rightIcon={currentStep === 3 ? null : <ArrowRight />}
+              rightIcon={currentStep === 3 ? undefined : <ArrowRight />}
               loading={isSaving}
               data-cy="generate"
             >
@@ -238,5 +238,3 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
     )
   );
 };
-
-

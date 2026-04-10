@@ -5,9 +5,6 @@ import {
   inputValue,
   sessionWithoutOutput,
   sessionWithOutput,
-  sessionWithStaleDependenciesAfterStep1Rerun,
-  sessionWithStaleDependencyAfterStep2Rerun,
-  sessionWithoutStaleDependenciesAfterStep3Rerun,
   stepExecution1,
   stepExecution1Rerun,
   stepExecution2,
@@ -16,6 +13,45 @@ import {
   stepExecution3Rerun,
 } from '../fixtures/session';
 
+const createExecutionTimestamp = (minute: number) => `2025-03-24T16:${minute.toString().padStart(2, '0')}:10.000000000`;
+
+const withUpdatedExecutionTimestamp = <T extends { data: { lastUpdatedAt?: string; finishedAt?: string } }>(
+  execution: T,
+  timestamp: string
+): T => ({
+  ...execution,
+  data: {
+    ...execution.data,
+    lastUpdatedAt: timestamp,
+    finishedAt: timestamp,
+  },
+});
+
+const withUpdatedSessionStepExecution = <
+  T extends {
+    data: {
+      stepExecutions: Record<string, Record<string, unknown>>;
+    };
+  },
+  U extends { data: Record<string, unknown> },
+>(
+  session: T,
+  stepId: string,
+  execution: U
+): T => ({
+  ...session,
+  data: {
+    ...session.data,
+    stepExecutions: {
+      ...session.data.stepExecutions,
+      [stepId]: {
+        ...session.data.stepExecutions[stepId],
+        ...execution.data,
+      },
+    },
+  },
+});
+
 describe('Can use AI-sammanställningar', () => {
   let currentSessionResponse = sessionWithoutOutput;
   let currentStepExecutions = {
@@ -23,6 +59,7 @@ describe('Can use AI-sammanställningar', () => {
     step2: stepExecution2,
     step3: stepExecution3,
   };
+  let rerunMinute = 41;
 
   beforeEach(() => {
     currentSessionResponse = sessionWithoutOutput;
@@ -31,6 +68,7 @@ describe('Can use AI-sammanställningar', () => {
       step2: stepExecution2,
       step3: stepExecution3,
     };
+    rerunMinute = 41;
 
     cy.intercept('GET', '**/api/me', meUser);
     cy.intercept('GET', '**/api/flow', flows);
@@ -51,12 +89,33 @@ describe('Can use AI-sammanställningar', () => {
       req.reply(currentStepExecutions.step3);
     });
     cy.intercept('POST', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step1', (req) => {
+      const rerunTimestamp = createExecutionTimestamp(rerunMinute++);
+      currentStepExecutions.step1 = withUpdatedExecutionTimestamp(currentStepExecutions.step1, rerunTimestamp);
+      currentSessionResponse = withUpdatedSessionStepExecution(
+        currentSessionResponse,
+        'step1',
+        currentStepExecutions.step1
+      );
       req.reply(currentStepExecutions.step1);
     }).as('rerunStep1');
     cy.intercept('POST', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step2', (req) => {
+      const rerunTimestamp = createExecutionTimestamp(rerunMinute++);
+      currentStepExecutions.step2 = withUpdatedExecutionTimestamp(currentStepExecutions.step2, rerunTimestamp);
+      currentSessionResponse = withUpdatedSessionStepExecution(
+        currentSessionResponse,
+        'step2',
+        currentStepExecutions.step2
+      );
       req.reply(currentStepExecutions.step2);
     }).as('rerunStep2');
     cy.intercept('POST', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/step/step3', (req) => {
+      const rerunTimestamp = createExecutionTimestamp(rerunMinute++);
+      currentStepExecutions.step3 = withUpdatedExecutionTimestamp(currentStepExecutions.step3, rerunTimestamp);
+      currentSessionResponse = withUpdatedSessionStepExecution(
+        currentSessionResponse,
+        'step3',
+        currentStepExecutions.step3
+      );
       req.reply(currentStepExecutions.step3);
     }).as('rerunStep3');
     cy.intercept('DELETE', '**/api/session/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', deleteSessionResponse);
@@ -147,17 +206,18 @@ describe('Can use AI-sammanställningar', () => {
     currentSessionResponse = sessionWithOutput;
     cy.get('[data-cy="generate"]').click();
     cy.wait('@sessionState');
+    cy.get('[data-cy="save-document"]').should('not.be.disabled');
 
     cy.get('[data-cy="step-stale-indicator-step1"]').should('not.exist');
     cy.get('[data-cy="step-stale-indicator-step2"]').should('not.exist');
     cy.get('[data-cy="step-stale-indicator-step3"]').should('not.exist');
 
     currentStepExecutions.step1 = stepExecution1Rerun;
-    currentSessionResponse = sessionWithStaleDependenciesAfterStep1Rerun;
     cy.get('[data-cy="rerun-step-input-step1"]').type('Uppdatera steg 1');
     cy.get('[data-cy="rerun-step-button-step1"]').click();
     cy.wait('@rerunStep1');
     cy.wait('@sessionState');
+    cy.contains('Uppdaterat resultat av steg 1').should('exist');
 
     cy.get('[data-cy="step-stale-indicator-step1"]').should('not.exist');
     cy.get('[data-cy="step-stale-indicator-step2"]').should('exist');
@@ -167,7 +227,6 @@ describe('Can use AI-sammanställningar', () => {
     cy.get('[data-cy="step-stale-warning-step2"]').should('contain', 'Detta steg kan behöva uppdateras');
 
     currentStepExecutions.step2 = stepExecution2Rerun;
-    currentSessionResponse = sessionWithStaleDependencyAfterStep2Rerun;
     cy.get('[data-cy="rerun-step-input-step2"]').type('Uppdatera steg 2');
     cy.get('[data-cy="rerun-step-button-step2"]').click();
     cy.wait('@rerunStep2');
@@ -180,11 +239,11 @@ describe('Can use AI-sammanställningar', () => {
     cy.get('[data-cy="step-stale-warning-step3"]').should('contain', 'Detta steg kan behöva uppdateras');
 
     currentStepExecutions.step3 = stepExecution3Rerun;
-    currentSessionResponse = sessionWithoutStaleDependenciesAfterStep3Rerun;
     cy.get('[data-cy="rerun-step-input-step3"]').type('Uppdatera steg 3');
     cy.get('[data-cy="rerun-step-button-step3"]').click();
     cy.wait('@rerunStep3');
     cy.wait('@sessionState');
+    cy.contains('Uppdaterat resultat av steg 3').should('exist');
 
     cy.get('[data-cy="step-stale-indicator-step3"]').should('not.exist');
     cy.get('[data-cy="step-stale-warning-step3"]').should('not.exist');

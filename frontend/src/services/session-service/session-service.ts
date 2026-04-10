@@ -187,13 +187,13 @@ export const generateDocument: (sessionId: string, templateId: string) => Promis
 };
 
 interface State<T> {
-  data: T;
+  data: T | null;
   loaded: boolean;
   loading: boolean;
 }
 
 interface Actions<T> {
-  setData: (data: T) => void;
+  setData: (data: T | null) => void;
   setLoaded: (loaded: boolean) => void;
   setLoading: (loading: boolean) => void;
 }

@@ -2,7 +2,7 @@ import { ApiResponse, apiService } from '@services/api-service';
 import { Flow, FlowSummary } from '@data-contracts/backend/data-contracts';
 import { create } from 'zustand';
 
-export const getFlows: () => Promise<FlowSummary[]> = async () => {
+export const getFlows: () => Promise<FlowSummary[] | null> = async () => {
   return apiService
     .get<ApiResponse<FlowSummary[]>>(`flow`)
     .then((res) => {
@@ -10,7 +10,7 @@ export const getFlows: () => Promise<FlowSummary[]> = async () => {
     })
     .catch(() => {
       console.error('Something went wrong');
-      return null as FlowSummary[];
+      return null;
     });
 };
 
@@ -27,15 +27,15 @@ export const getFlow: (name: string, version: number) => Promise<Flow> = async (
 };
 
 interface State<T> {
-  flows: FlowSummary[];
-  flow: Flow;
+  flows: FlowSummary[] | null;
+  flow: Flow | null;
   loaded: boolean;
   loading: boolean;
 }
 
 interface Actions<T> {
-  setFlow: (data: Flow) => void;
-  setFlows: (data: FlowSummary[]) => void;
+  setFlow: (data: Flow | null) => void;
+  setFlows: (data: FlowSummary[] | null) => void;
   setLoaded: (loaded: boolean) => void;
   setLoading: (loading: boolean) => void;
 }

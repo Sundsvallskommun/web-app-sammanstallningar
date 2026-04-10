@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useFlowStore } from '@services/flow-service/flow-service';
-import { Button, Disclosure, Divider, Icon, Spinner, TextField, useSnackbar, Alert } from '@sk-web-gui/react';
-import { ArrowLeft, ArrowRight, Info, IterationCcw } from 'lucide-react';
-import { useSession } from '@services/session-service/use-session';
-import { getStepExecution, runAllSteps, runStep } from '@services/session-service/session-service';
-import { useTranslation } from 'next-i18next';
 import { Helper } from '@components/helper/helper.component';
 import { StepExecution, StepExecutionStateEnum } from '@data-contracts/backend/data-contracts';
-import { useForm } from 'react-hook-form';
+import { useFlowStore } from '@services/flow-service/flow-service';
+import { getStepExecution, runAllSteps, runStep } from '@services/session-service/session-service';
+import { useSession } from '@services/session-service/use-session';
+import { Alert, Button, Disclosure, Divider, Label, Spinner, TextField, useSnackbar } from '@sk-web-gui/react';
 import sanitized from '@utils/sanitizer';
+import { ArrowLeft, ArrowRight, IterationCcw } from 'lucide-react';
+import { useTranslation } from 'next-i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 interface CompilerProps {
   currentStep: number;
@@ -32,9 +32,9 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   const { register, getValues } = useForm();
   const [isCompiling, setIsCompiling] = useState<boolean>(true);
   const [isReRunningStep, setIsReRunningStep] = useState<boolean[]>([]);
-  const [intervalId, setIntervalId] = useState(null);
   const [open, setOpen] = useState<{ [key: number]: boolean }>({ 0: true });
-  const interval = useRef<NodeJS.Timeout | null>(null);
+  const compileInterval = useRef<NodeJS.Timeout | null>(null);
+  const rerunInterval = useRef<NodeJS.Timeout | null>(null);
   const sortedSteps = flow?.steps ? [...flow.steps].sort((a, b) => a.order - b.order) : [];
   const stepDependencies = sortedSteps.reduce<Record<string, string[]>>((dependencies, step) => {
     if (!step.id) {
@@ -52,6 +52,31 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
     return dependencies;
   }, {});
 
+  const handleClearCompileInterval = () => {
+    if (compileInterval.current) {
+      clearInterval(compileInterval.current);
+    }
+  };
+
+  const handleClearRerunInterval = () => {
+    if (rerunInterval.current) {
+      clearInterval(rerunInterval.current);
+    }
+  };
+
+  const handleClearIntervals = () => {
+    handleClearCompileInterval();
+    handleClearRerunInterval();
+  };
+
+  const handleRerunFinished = () => {
+    handleClearRerunInterval();
+    setIsReRunningStep([]);
+    if (session?.id) {
+      refreshSession(session.id);
+    }
+  };
+
   const getStepTimestamp = (stepId?: string) => {
     if (!stepId) {
       return null;
@@ -64,8 +89,13 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
       return null;
     }
 
-    const parsedTimestamp = new Date(timestamp).getTime();
-    return Number.isNaN(parsedTimestamp) ? null : parsedTimestamp;
+    // Backend timestamps can include nanoseconds, which are not parsed consistently in browsers.
+    // Normalize them to a fixed YYYYMMDDHHmmssSSS string so lexical comparison stays reliable.
+    return timestamp
+      .replace(/\.(\d{3})\d+/, '.$1')
+      .replaceAll(/\D/g, '')
+      .padEnd(17, '0')
+      .slice(0, 17);
   };
 
   const getUpstreamStepIds = (stepId?: string) => {
@@ -148,15 +178,14 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
 
     if (index < sortedSteps.length) {
       try {
-        interval.current = setInterval(async () => {
-          setIntervalId(interval);
+        compileInterval.current = setInterval(async () => {
           await getStepExecution(session.id, sortedSteps[index].id)
             .then((executedStep: StepExecution) => {
               if (executedStep.state === StepExecutionStateEnum.DONE) {
-                clearInterval(interval.current);
+                handleClearCompileInterval();
                 executeAllSteps(index + 1);
               } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                clearInterval(interval.current);
+                handleClearCompileInterval();
                 toastMessage({
                   position: 'bottom',
                   closeable: true,
@@ -166,7 +195,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
               }
             })
             .catch(() => {
-              clearInterval(interval.current);
+              handleClearCompileInterval();
               toastMessage({
                 position: 'bottom',
                 closeable: true,
@@ -184,21 +213,25 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   };
 
   const reRunStep = (stepId: string, index: number) => {
-    if (getValues(`input-${index}`)) {
+    if (getValues(`input-${index}`) && session) {
       handleReRunningStepsLoading(index);
       runStep(session.id, stepId, getValues(`input-${index}`))
         .then(() => {
           try {
-            interval.current = setInterval(async () => {
+            handleClearRerunInterval();
+            rerunInterval.current = setInterval(async () => {
               await getStepExecution(session.id, stepId)
                 .then((executedStep: StepExecution) => {
                   if (executedStep.state === StepExecutionStateEnum.DONE) {
-                    clearInterval(interval.current);
+                    handleRerunFinished();
                   } else if (executedStep.state === StepExecutionStateEnum.ERROR) {
-                    clearInterval(interval.current);
+                    handleClearRerunInterval();
+                    setIsReRunningStep([]);
                   }
                 })
                 .catch(() => {
+                  handleClearRerunInterval();
+                  setIsReRunningStep([]);
                   toastMessage({
                     position: 'bottom',
                     closeable: true,
@@ -208,12 +241,12 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                 });
             }, 1000);
           } catch (e) {
+            setIsReRunningStep([]);
             console.error('Something went wrong when rerunning step', e);
           }
         })
-        .then(() => {
+        .catch(() => {
           setIsReRunningStep([]);
-          refreshSession(session.id);
         });
     } else {
       toastMessage({
@@ -228,8 +261,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
   useEffect(() => {
     executeAllSteps(0);
     return () => {
-      clearInterval(intervalId);
-      clearInterval(interval.current);
+      handleClearIntervals();
     };
   }, []);
 
@@ -273,13 +305,13 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
                       <div className="flex items-center gap-8 pr-16">
                         <span>{input.order + '. ' + input.name}</span>
                         {isStaleStep && !open[index] && (
-                          <span
-                            className="inline-flex items-center gap-4 rounded-20 border-1 border-divider bg-background-content px-8 py-2 text-small font-semibold"
+                          <Label
+                            color="warning"
                             data-cy={`step-stale-indicator-${input.id}`}
+                            className="ml-6 text-small"
                           >
-                            <Icon size="1rem" icon={<Info />} />
                             {t('step:compiler.stale_step_badge')}
-                          </span>
+                          </Label>
                         )}
                       </div>
                     </Disclosure.Title>
@@ -342,7 +374,7 @@ export const Compiler: React.FC<CompilerProps> = (props) => {
             <Button
               variant="secondary"
               onClick={() => {
-                clearInterval(intervalId);
+                handleClearIntervals();
                 handleChangeStep(currentStep - 1);
               }}
               leftIcon={<ArrowLeft />}

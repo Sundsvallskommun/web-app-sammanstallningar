@@ -28,7 +28,7 @@ export const GET = async () => {
   } catch (error) {
     return new NextResponse(
       JSON.stringify({
-        error: error.toString(),
+        error: error?.toString(),
         status: 'ERROR!',
       }),
       { status: 500 }

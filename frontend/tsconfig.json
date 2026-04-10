@@ -1,65 +1,6 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": false,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "incremental": true,
-    "baseUrl": ".",
-    "paths": {
-      "@app/*": [
-        "src/app/*"
-      ],
-      "@services/*": [
-        "src/services/*"
-      ],
-      "@components/*": [
-        "src/components/*"
-      ],
-      "@interfaces/*": [
-        "src/interfaces/*"
-      ],
-      "@contexts/*": [
-        "src/contexts/*"
-      ],
-      "@layouts/*": [
-        "src/layouts/*"
-      ],
-      "@styles/*": [
-        "src/styles/*"
-      ],
-      "@utils/*": [
-        "src/utils/*"
-      ],
-      "@pages/*": [
-        "src/pages/*"
-      ],
-      "@middlewares/*": [
-        "src/utils/middlewares/*"
-      ],
-      "@public/*": [
-        "public/*"
-      ],
-      "@jestRoot/*": [
-        ".jest/*"
-      ],
-      "@data-contracts/*": [
-        "src/data-contracts/*"
-      ]
-    },
     "plugins": [
       {
         "name": "next"
@@ -67,14 +8,14 @@
     ]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
     "next-env.d.ts",
     "node_modules/dayjs/plugin/utc.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "./*.js",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    "next.config.js",
+    "node_modules/zustand/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules", "src/swagger-typescript-api.ts"]
 }

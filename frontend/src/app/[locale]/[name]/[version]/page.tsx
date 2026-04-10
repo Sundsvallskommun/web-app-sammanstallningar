@@ -47,7 +47,7 @@ function Index() {
     const title = document.title;
     const id = flow?.id?.replace('-', ' ');
     const endTitle = title.split('-')[1];
-    if (title.toLowerCase().startsWith(id)) {
+    if (title.toLowerCase().startsWith(id ?? '')) {
       const newTitle = `${flow?.name} - ${endTitle}`;
       document.title = newTitle;
     }
@@ -65,7 +65,7 @@ function Index() {
     loaded && (
       <DefaultLayout>
         <Head>
-          <title>{flow.name}</title>
+          <title>{flow?.name}</title>
         </Head>
         <Main>
           <FormProvider {...methods}>
