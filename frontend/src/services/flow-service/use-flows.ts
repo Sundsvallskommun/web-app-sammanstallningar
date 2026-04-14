@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { Flow, FlowSummary } from '@data-contracts/backend/data-contracts';
+import { FlowSummary } from '@data-contracts/backend/data-contracts';
 import { getFlows, useFlowStore } from '@services/flow-service/flow-service';
 import { useUserStore } from '@services/user-service/user-service';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 export const useFlows = (): {
-  flows: FlowSummary[];
+  flows: FlowSummary[] | null;
   loaded: boolean;
   loading: boolean;
   refresh: () => void;

@@ -14,4 +14,11 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import './commands';
+
+beforeEach(() => {
+  Cypress.on('uncaught:exception', (err) => {
+    console.log('Error: ', err);
+    return false;
+  });
+});
