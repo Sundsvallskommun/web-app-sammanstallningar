@@ -21,12 +21,12 @@ export const isEmpty = (value: string | number | object): boolean => {
 
 export const localApi = (...parts: string[]): string => {
   const urlParts = [BASE_URL_PREFIX, ...parts];
-  return urlParts.map(pathPart => pathPart.replace(/(\/$)/g, '')).join('/');
+  return urlParts.map(pathPart => pathPart?.replace(/(\/$)/g, '')).join('/');
 };
 
 export const apiURL = (...parts: string[]): string => {
   const urlParts = [API_BASE_URL, ...parts];
-  return urlParts.map(pathPart => pathPart.replace(/(^\/|\/$)/g, '')).join('/');
+  return urlParts.map(pathPart => pathPart?.replace(/(^\/|\/$)/g, '')).join('/');
 };
 
 export const luhnCheck = (str = ''): boolean => {

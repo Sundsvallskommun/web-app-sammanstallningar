@@ -5,7 +5,7 @@
 Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa. Systemet utgår ifrån /backend/api-config.ts där dessa står specificerade.
 
 | API             | Version |
-|-----------------| ------: |
+| --------------- | ------: |
 | SimulatorServer |     2.0 |
 | AiFlow          |     2.0 |
 
@@ -56,18 +56,9 @@ redigera `.env.development.local` för behov. URLer, nycklar och cert behöver f
 - `SAML_IDP_PUBLIC_CERT` ska stämma överens med IDPens cert
 - `SAML_PRIVATE_KEY` och `SAML_PUBLIC_KEY` behöver bara fyllas i korrekt om man kör mot en riktig IDP
 
-5. Initiera eventuell databas för backend
-
-```
-cd backend
-yarn prisma:generate
-yarn prisma:migrate
-```
-
-6. Synca datamodeller för api:er
+5. Synca datamodeller för api:er
 
    Se till att README och /backend/src/config/api-config.ts matchar och justera utefter de api:er som önskas användas.
-
    - För backend, i /backend kör `yarn generate:contracts` för att få ned de senaste datamodellerna för samtliga api:er
      -- Justera om så behövs utifrån de uppdaterade modellerna
 
