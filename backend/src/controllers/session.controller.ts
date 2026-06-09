@@ -69,7 +69,9 @@ export class SessionController {
     @Param('inputId') inputId: string,
   ): Promise<ResponseData<Session>> {
     const data = new FormData();
-    data.append('file', files[0].buffer, { filename: files[0].originalname });
+    files.forEach(file => {
+      data.append('file', file.buffer, { filename: file.originalname });
+    });
 
     const url = `${this.baseUrl}/session/${sessionId}/input/${inputId}/file`;
     const res = await this.apiService.post<Session, FormData>({ url, data, headers: { 'Content-Type': 'multipart/form-data' } }, req.user);

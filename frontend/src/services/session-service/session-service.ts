@@ -107,12 +107,17 @@ export const addSessionInput: (
       Object.entries(inputData.attachmentInput).map(async ([key, value]) => {
         if (value.length) {
           try {
-            const fileData = await fileToBase64(value[0].file);
-            const buf = Buffer.from(fileData, 'base64');
-            const blob = new Blob([buf], { type: value[0].file.type });
             const formData = new FormData();
-            formData.append(`files`, blob, value[0].file.name);
-            formData.append(`name`, value[0].file.name);
+
+            await Promise.all(
+              value.map(async (uploadFile) => {
+                const fileData = await fileToBase64(uploadFile.file);
+                const buf = Buffer.from(fileData, 'base64');
+                const blob = new Blob([buf], { type: uploadFile.file.type });
+
+                formData.append('files', blob, uploadFile.file.name);
+              })
+            );
 
             await apiService.post<Session, FormData>(`session/${sessionId}/input/${key}/file`, formData, {
               headers: { 'Content-Type': 'multipart/form-data' },
