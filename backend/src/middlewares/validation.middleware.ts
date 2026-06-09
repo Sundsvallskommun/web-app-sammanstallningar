@@ -19,14 +19,16 @@ export const validationMiddleware = (
 ): RequestHandler => {
   return (req, _res, next) => {
     const payload = req[value] as unknown;
-    const obj = plainToInstance(type, payload as Record<string, unknown>);
-    validate(obj as object, { skipMissingProperties, whitelist, forbidNonWhitelisted }).then((errors: ValidationError[]) => {
-      if (errors.length > 0) {
-        const message = errors.map(getAllNestedErrors).join(', ');
-        next(new HttpException(400, message));
-      } else {
-        next();
-      }
-    });
+    const obj = plainToInstance(type, payload);
+    validate(obj as object, { skipMissingProperties, whitelist, forbidNonWhitelisted }).then(
+      (errors: ValidationError[]) => {
+        if (errors.length > 0) {
+          const message = errors.map(getAllNestedErrors).join(', ');
+          next(new HttpException(400, message));
+        } else {
+          next();
+        }
+      },
+    );
   };
 };
