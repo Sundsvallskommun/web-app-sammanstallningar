@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFlowStore } from '@services/flow-service/flow-service';
 import { Button, Checkbox, useSnackbar } from '@sk-web-gui/react';
 import { ArrowLeft, FileDown } from 'lucide-react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { useSession } from '@services/session-service/use-session';
 import { generateDocument } from '@services/session-service/session-service';
 import dayjs from 'dayjs';
@@ -15,7 +15,7 @@ interface DocumentGeneratorProps {
 
 export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
   const { currentStep, handleChangeStep } = props;
-  const { t } = useTranslation();
+  const { t } = useT();
   const toastMessage = useSnackbar();
 
   const { flow } = useFlowStore();

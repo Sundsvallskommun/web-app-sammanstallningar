@@ -1,6 +1,6 @@
 import { useFlows } from '@services/flow-service/use-flows';
 import { Card } from '@sk-web-gui/react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -11,7 +11,7 @@ interface FlowPickerProps {
 }
 
 export const FlowPicker: React.FC<FlowPickerProps> = (props) => {
-  const { t } = useTranslation();
+  const { t } = useT();
   const { reset } = useFormContext();
   const router = useRouter();
 

@@ -1,7 +1,9 @@
+'use client';
+
 import { Icon } from '@sk-web-gui/react';
 import { Info } from 'lucide-react';
 import React from 'react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 
 interface InputValidationErrorProps {
   errors: any;
@@ -11,7 +13,7 @@ interface InputValidationErrorProps {
 }
 
 export const InputValidationError = (props: InputValidationErrorProps) => {
-  const { t } = useTranslation();
+  const { t } = useT();
   const { errors, inputId, inputType, description } = props;
 
   const getInputType = () => {

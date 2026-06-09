@@ -6,7 +6,7 @@ import { useSession } from '@services/session-service/use-session';
 import { Alert, Button, Disclosure, Divider, Label, Spinner, TextField, useSnackbar } from '@sk-web-gui/react';
 import sanitized from '@utils/sanitizer';
 import { ArrowLeft, ArrowRight, IterationCcw } from 'lucide-react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -25,7 +25,7 @@ interface StepInputDependency {
 
 export const Compiler: React.FC<CompilerProps> = (props) => {
   const { currentStep, handleChangeStep, stepIndex, setStepIndex, submitCount } = props;
-  const { t } = useTranslation();
+  const { t } = useT();
   const toastMessage = useSnackbar();
   const { flow } = useFlowStore();
   const { data: session, refresh: refreshSession } = useSession();

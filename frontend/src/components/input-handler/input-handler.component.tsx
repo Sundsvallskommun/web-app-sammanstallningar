@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { useFlowStore } from '@services/flow-service/flow-service';
 import {
@@ -15,7 +17,7 @@ import { useFormContext } from 'react-hook-form';
 import { useSession } from '@services/session-service/use-session';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { addSessionInput, createSession, deleteSession } from '@services/session-service/session-service';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { Helper } from '@components/helper/helper.component';
 import { InputValidationError } from '@components/input-handler/input-validation-error/input-validation-error.component';
 
@@ -37,7 +39,7 @@ interface FormModel {
 export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const { currentStep, handleChangeStep, setCompilerStepIndex, submitCount, setSubmitCount } = props;
   const toastMessage = useSnackbar();
-  const { t } = useTranslation();
+  const { t } = useT();
   const { flow } = useFlowStore();
   const { data, refresh: refreshSession, setData } = useSession();
   const [isSaving, setIsSaving] = useState<boolean>(false);

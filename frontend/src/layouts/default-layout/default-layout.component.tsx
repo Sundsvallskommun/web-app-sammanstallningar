@@ -2,7 +2,7 @@
 
 import { useUserStore } from '@services/user-service/user-service';
 import { Footer, Header, Logo, UserMenu } from '@sk-web-gui/react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
@@ -28,7 +28,7 @@ export default function DefaultLayout({
 
   const user = useUserStore(useShallow((s) => s.user));
 
-  const { t } = useTranslation();
+  const { t } = useT();
 
   const setFocusToMain = () => {
     const contentElement = document.getElementById('content');
