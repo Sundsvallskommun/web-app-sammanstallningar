@@ -8,7 +8,7 @@ import DefaultLayout from '@layouts/default-layout/default-layout.component';
 import Main from '@layouts/main/main.component';
 import { useFlow } from '@services/flow-service/use-flow';
 import { UploadFile } from '@sk-web-gui/react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import Head from 'next/head';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -21,7 +21,7 @@ interface FormModel {
 }
 
 function Index() {
-  const { t } = useTranslation();
+  const { t } = useT();
   const { name, version } = useParams();
   const router = useRouter();
   const decodedName = (() => {

@@ -5,14 +5,14 @@ import EmptyLayout from '@layouts/empty-layout/empty-layout.component';
 import { Button, FormErrorMessage } from '@sk-web-gui/react';
 import { apiURL } from '@utils/api-url';
 import { appURL } from '@utils/app-url';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { useEffect, useRef, useState } from 'react';
 import { capitalize } from 'underscore.string';
 
 export default function Start() {
   const [errorMessage, setErrorMessage] = useState('');
   const [mounted, setMounted] = useState(false);
-  const { t } = useTranslation();
+  const { t } = useT();
 
   const params = new URLSearchParams(globalThis.location.search);
   const failMessage = params.get('failMessage');

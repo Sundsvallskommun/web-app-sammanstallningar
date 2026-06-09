@@ -5,7 +5,7 @@ import { FormStepper } from '@components/form-stepper/form-stepper.component';
 import DefaultLayout from '@layouts/default-layout/default-layout.component';
 import Main from '@layouts/main/main.component';
 import { UploadFile } from '@sk-web-gui/react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
@@ -16,7 +16,7 @@ interface FormModel {
 }
 
 function Index() {
-  const { t } = useTranslation();
+  const { t } = useT();
 
   const methods = useForm<FormModel>({
     defaultValues: { attachmentInput: {} },

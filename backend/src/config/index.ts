@@ -8,6 +8,7 @@ config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
 export const CREDENTIALS = process.env.CREDENTIALS === 'true';
 export const SWAGGER_ENABLED = process.env.SWAGGER_ENABLED === 'true';
 export const SESSION_MEMORY = process.env.SESSION_MEMORY === 'true';
+export const LOG_DIR = process.env.LOG_DIR ?? '../../data/logs';
 
 export const {
   APP_NAME,
@@ -15,7 +16,6 @@ export const {
   PORT,
   API_BASE_URL,
   LOG_FORMAT,
-  LOG_DIR,
   ORIGIN,
   SECRET_KEY,
   CLIENT_KEY,

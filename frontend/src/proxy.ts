@@ -3,7 +3,8 @@ import { i18nRouter } from 'next-i18n-router';
 import i18nConfig from '@app/i18nConfig';
 import { envs } from '../middleware-envs';
 
-const STATIC_FILE_REGEX = /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mjs|png|svg|txt|webmanifest|webp|woff|woff2|xml)$/i;
+const STATIC_FILE_REGEX =
+  /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mjs|png|svg|txt|webmanifest|webp|woff|woff2|xml)$/i;
 
 export async function proxy(req: NextRequest) {
   const { pathname, origin } = req.nextUrl;

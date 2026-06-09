@@ -5,6 +5,7 @@ import { RequestWithUser } from '@interfaces/auth.interface';
 import { Flow, FlowSummary } from '@/responses/flow.response';
 import { MUNICIPALITY_ID } from '@/config';
 import authMiddleware from '@middlewares/auth.middleware';
+import { HttpException } from '@/exceptions/HttpException';
 
 interface ResponseData<T> {
   data: T;
@@ -34,9 +35,14 @@ export class FlowController {
     const url = `${this.baseUrl}/flow/${flowName}/${version}`;
     try {
       const res = await this.apiService.get<Flow>({ url }, req.user);
-      return { data: res.data, message: 'success' };
+      if (res.data) {
+        return { data: res.data, message: 'success' };
+      } else {
+        throw new HttpException(404, 'Not found');
+      }
     } catch (e) {
       console.log(e);
+      throw new HttpException(404, 'Not found');
     }
   }
 }
