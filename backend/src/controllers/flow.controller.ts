@@ -15,8 +15,8 @@ interface ResponseData<T> {
 
 @Controller()
 export class FlowController {
-  private apiService = new ApiService();
-  private baseUrl = `${getApiBase('aiflow')}/${MUNICIPALITY_ID}`;
+  private readonly apiService = new ApiService();
+  private readonly baseUrl = `${getApiBase('aiflow')}/${MUNICIPALITY_ID}`;
 
   @Get('/flow')
   @OpenAPI({ summary: 'Fetch all flows' })
