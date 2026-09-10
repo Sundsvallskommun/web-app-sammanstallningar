@@ -6,6 +6,7 @@ import { Flow, FlowSummary } from '@/responses/flow.response';
 import { MUNICIPALITY_ID } from '@/config';
 import authMiddleware from '@middlewares/auth.middleware';
 import { HttpException } from '@/exceptions/HttpException';
+import { getApiBase } from '@/config/api-config';
 
 interface ResponseData<T> {
   data: T;
@@ -15,7 +16,7 @@ interface ResponseData<T> {
 @Controller()
 export class FlowController {
   private apiService = new ApiService();
-  private baseUrl = `aiflow/2.0/${MUNICIPALITY_ID}`;
+  private baseUrl = `${getApiBase('aiflow')}/${MUNICIPALITY_ID}`;
 
   @Get('/flow')
   @OpenAPI({ summary: 'Fetch all flows' })
