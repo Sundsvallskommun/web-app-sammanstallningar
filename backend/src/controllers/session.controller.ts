@@ -15,6 +15,7 @@ import { RenderRequest } from '@/responses/flow.response';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@/utils/logger';
 import { HttpException } from '@/exceptions/HttpException';
+import { getApiBase } from '@/config/api-config';
 const FormData = require('form-data');
 
 interface ResponseData<T> {
@@ -24,8 +25,8 @@ interface ResponseData<T> {
 
 @Controller()
 export class SessionController {
-  private apiService = new ApiService();
-  private baseUrl = `aiflow/2.0/${MUNICIPALITY_ID}`;
+  private readonly apiService = new ApiService();
+  private readonly baseUrl = `${getApiBase('aiflow')}/${MUNICIPALITY_ID}`;
 
   @Post('/session')
   @OpenAPI({ summary: 'Create a session' })
