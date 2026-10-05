@@ -276,7 +276,7 @@ class App {
           }
 
           let successRedirect: URL, failureRedirect: URL;
-          const urls = req?.body?.RelayState.split(',');
+          const urls = String(req?.body?.RelayState ?? req?.query?.RelayState ?? '').split(',');
 
           if (isValidUrl(urls[0])) {
             successRedirect = new URL(urls[0]);
@@ -314,7 +314,7 @@ class App {
       (req, res, next) => {
         let successRedirect: URL, failureRedirect: URL;
 
-        let urls = req?.body?.RelayState.split(',');
+        const urls = String(req?.body?.RelayState ?? req?.query?.RelayState ?? '').split(',');
 
         if (isValidUrl(urls[0])) {
           successRedirect = new URL(urls[0]);
