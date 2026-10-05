@@ -13,6 +13,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_OUTPUT standalone
 RUN yarn build
 # Remove all the development dependencies since we don't
 # need them to run the actual server.

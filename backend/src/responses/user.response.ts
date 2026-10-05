@@ -3,31 +3,21 @@ import { ClientUser } from '@/interfaces/users.interface';
 import { Type } from 'class-transformer';
 import { IsString, ValidateNested } from 'class-validator';
 
-// export class Permissions implements IPermissions {
-//   @IsBoolean()
-//   canEditSystemMessages: boolean;
-// }
-
 export class User implements ClientUser {
   @IsString()
-  name: string;
+  name!: string;
   @IsString()
-  username: string;
+  username!: string;
   @IsString()
-  givenName: string;
+  givenName!: string;
   @IsString()
-  surname: string;
-  // @IsEnum(InternalRoleEnum)
-  // role: InternalRole;
-  // @ValidateNested()
-  // @Type(() => Permissions)
-  // permissions: Permissions;
+  surname!: string;
 }
 
 export class UserApiResponse implements ApiResponse<User> {
   @ValidateNested()
   @Type(() => User)
-  data: User;
+  data!: User;
   @IsString()
-  message: string;
+  message!: string;
 }

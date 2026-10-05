@@ -86,11 +86,7 @@ export const flow = {
           type: 'SERVICE',
           id: '9dda859f-aaaa-aaaa-aaaa-cdcb1c8b3d85',
         },
-        input: [
-          {
-            'flow-input-ref': 'step2',
-          },
-        ],
+        input: [],
       },
       {
         id: 'step2',
@@ -102,7 +98,7 @@ export const flow = {
         },
         input: [
           {
-            'flow-input-ref': 'step3',
+            'use-output-from-step': 'step1',
           },
         ],
       },
@@ -116,7 +112,7 @@ export const flow = {
         },
         input: [
           {
-            'flow-input-ref': 'step1',
+            'flow-input-ref': 'step2',
           },
         ],
       },

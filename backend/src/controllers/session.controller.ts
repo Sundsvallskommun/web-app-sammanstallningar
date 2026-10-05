@@ -2,10 +2,20 @@ import ApiService from '@services/api.service';
 import { Body, Controller, Delete, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import { ChatRequest, CreateSessionRequest, Output, Session, SimpleInput, StepExecution } from '@/data-contracts/aiflow/data-contracts';
+import {
+  ChatRequest,
+  CreateSessionRequest,
+  Output,
+  Session,
+  SimpleInput,
+  StepExecution,
+} from '@/data-contracts/aiflow/data-contracts';
 import { MUNICIPALITY_ID } from '@config';
 import { RenderRequest } from '@/responses/flow.response';
 import authMiddleware from '@middlewares/auth.middleware';
+import { logger } from '@/utils/logger';
+import { HttpException } from '@/exceptions/HttpException';
+import { getApiBase } from '@/config/api-config';
 const FormData = require('form-data');
 
 interface ResponseData<T> {
@@ -15,8 +25,8 @@ interface ResponseData<T> {
 
 @Controller()
 export class SessionController {
-  private apiService = new ApiService();
-  private baseUrl = `aiflow/2.0/${MUNICIPALITY_ID}`;
+  private readonly apiService = new ApiService();
+  private readonly baseUrl = `${getApiBase('aiflow')}/${MUNICIPALITY_ID}`;
 
   @Post('/session')
   @OpenAPI({ summary: 'Create a session' })
@@ -30,7 +40,10 @@ export class SessionController {
   @Get('/session/:sessionId')
   @OpenAPI({ summary: 'Fetch session' })
   @UseBefore(authMiddleware)
-  async fetchSession(@Req() req: RequestWithUser, @Param('sessionId') sessionId: string): Promise<ResponseData<Session>> {
+  async fetchSession(
+    @Req() req: RequestWithUser,
+    @Param('sessionId') sessionId: string,
+  ): Promise<ResponseData<Session>> {
     const url = `${this.baseUrl}/session/${sessionId}`;
     const res = await this.apiService.get<Session>({ url }, req.user);
     return { data: res.data, message: 'success' };
@@ -39,7 +52,10 @@ export class SessionController {
   @Delete('/session/:sessionId')
   @OpenAPI({ summary: 'Delete session' })
   @UseBefore(authMiddleware)
-  async deleteSession(@Req() req: RequestWithUser, @Param('sessionId') sessionId: string): Promise<ResponseData<number>> {
+  async deleteSession(
+    @Req() req: RequestWithUser,
+    @Param('sessionId') sessionId: string,
+  ): Promise<ResponseData<number>> {
     const url = `${this.baseUrl}/session/${sessionId}`;
     const res = await this.apiService.delete<number>({ url }, req.user);
     return { data: res.data, message: 'success' };
@@ -68,13 +84,28 @@ export class SessionController {
     @UploadedFiles('files') files: Express.Multer.File[],
     @Param('inputId') inputId: string,
   ): Promise<ResponseData<Session>> {
-    const data = new FormData();
-    data.append('file', files[0].buffer, { filename: files[0].originalname });
-
     const url = `${this.baseUrl}/session/${sessionId}/input/${inputId}/file`;
-    const res = await this.apiService.post<Session, FormData>({ url, data, headers: { 'Content-Type': 'multipart/form-data' } }, req.user);
 
-    return { data: res.data, message: 'success' };
+    const allRes = await Promise.allSettled(
+      files.map(file => {
+        const data = new FormData();
+        data.append('file', file.buffer, { filename: file.originalname });
+        return this.apiService.post<Session, FormData>(
+          { url, data, headers: { 'Content-Type': 'multipart/form-data' } },
+          req.user,
+        );
+      }),
+    ).catch(error => {
+      logger.error('Error uploading file: ', error);
+    });
+
+    const data = allRes?.findLast(res => res.status === 'fulfilled')?.value.data;
+
+    if (!data) {
+      throw new HttpException(500, 'Error uploading document(s)');
+    }
+
+    return { data, message: 'success' };
   }
 
   @Post('/session/:sessionId')

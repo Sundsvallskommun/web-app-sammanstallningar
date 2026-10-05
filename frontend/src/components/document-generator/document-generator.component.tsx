@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFlowStore } from '@services/flow-service/flow-service';
 import { Button, Checkbox, useSnackbar } from '@sk-web-gui/react';
 import { ArrowLeft, FileDown } from 'lucide-react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { useSession } from '@services/session-service/use-session';
 import { generateDocument } from '@services/session-service/session-service';
 import dayjs from 'dayjs';
@@ -15,7 +15,7 @@ interface DocumentGeneratorProps {
 
 export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
   const { currentStep, handleChangeStep } = props;
-  const { t } = useTranslation();
+  const { t } = useT();
   const toastMessage = useSnackbar();
 
   const { flow } = useFlowStore();
@@ -33,14 +33,15 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
   };
 
   const handleDownload = () => {
-    if (!session.id) {
+    if (!session?.id) {
       return;
     }
+    if (!flow?.defaultTemplateId) return;
 
     setIsGenerating(true);
     generateDocument(session.id, flow.defaultTemplateId)
       .then((res) => {
-        const fileName = `${flow.name}-${dayjs(new Date()).format('YYYY-MM-DD')}`;
+        const fileName = `${flow?.name}-${dayjs(new Date()).format('YYYY-MM-DD')}`;
         downloadBase64File(res, fileName);
       })
       .catch(() => {
@@ -68,7 +69,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
   return (
     <div className="flex flex-col">
       <div className="w-2/3">
-        <h1 className="text-h1-sm mb-12">{t('step:document_generator.title', { flow: flow.name })}</h1>
+        <h1 className="text-h1-sm mb-12">{t('step:document_generator.title', { flow: flow?.name })}</h1>
         <p className="mb-36">{t('step:document_generator.description')}</p>
       </div>
       <div className="flex gap-10 mb-32">
@@ -85,7 +86,7 @@ export const DocumentGenerator: React.FC<DocumentGeneratorProps> = (props) => {
           rounded
           data-cy="download-document-button"
         >
-          {t('step:document_generator.download', { flow: flow.name + ' ' + dayjs(new Date()).format('YYYY-MM-DD') })}
+          {t('step:document_generator.download', { flow: flow?.name + ' ' + dayjs(new Date()).format('YYYY-MM-DD') })}
         </Button>
       </div>
 

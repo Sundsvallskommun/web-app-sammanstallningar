@@ -5,8 +5,8 @@ import { useUserStore } from '@services/user-service/user-service';
 import { createSession, getSession, useSessionStore } from '@services/session-service/session-service';
 
 export const useSession = (): {
-  data: Session;
-  setData: (data: Session) => void;
+  data: Session | null;
+  setData: (data: Session | null) => void;
   loaded: boolean;
   setLoaded: (boolean: boolean) => void;
   loading: boolean;

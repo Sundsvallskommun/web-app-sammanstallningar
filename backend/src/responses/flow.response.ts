@@ -62,7 +62,7 @@ export class Session implements SessionType {
 
 export class CreateSessionRequest implements CreateSessionRequestType {
   @IsString()
-  flowId: string;
+  flowId!: string;
   @IsNumber()
   version?: number;
 }
@@ -84,14 +84,14 @@ export class StepExecution implements StepExecutionType {
 
 export class ChatRequest implements ChatRequestType {
   @IsString()
-  input: string;
+  input!: string;
   @IsBoolean()
   runRequiredSteps?: boolean;
 }
 
 export class SimpleInput implements SimpleInputType {
   @IsString()
-  value: string;
+  value!: string;
 }
 
 export class Output implements OutputType {

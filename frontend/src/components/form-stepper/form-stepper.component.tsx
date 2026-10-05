@@ -20,7 +20,7 @@ export const FormStepper: React.FC<FormStepperProps> = (props) => {
   return (
     <div className="flex flex-col">
       <div className="w-full mx-auto bg-vattjom-background-100 lg:px-80 sm:px-24">
-        <div className="mx-auto container">
+        <div className="flex justify-center w-full">
           <ProgressStepper
             className="w-[60rem] py-32"
             steps={steps.map((step) => step.label)}

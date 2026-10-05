@@ -13,7 +13,7 @@ export class HealthController {
   @Get('/health/up')
   @OpenAPI({ summary: 'Return health check' })
   async up() {
-    const url = `${this.api.name}/${this.api.version}/simulations/response?status=200%20OK`;
+    const url = `${this?.api?.name}/${this?.api?.version}/simulations/response?status=200%20OK`;
     const data = {
       status: 'OK',
     };

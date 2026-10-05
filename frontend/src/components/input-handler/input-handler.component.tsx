@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { useFlowStore } from '@services/flow-service/flow-service';
 import {
@@ -15,7 +17,7 @@ import { useFormContext } from 'react-hook-form';
 import { useSession } from '@services/session-service/use-session';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { addSessionInput, createSession, deleteSession } from '@services/session-service/session-service';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 import { Helper } from '@components/helper/helper.component';
 import { InputValidationError } from '@components/input-handler/input-validation-error/input-validation-error.component';
 
@@ -37,7 +39,7 @@ interface FormModel {
 export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const { currentStep, handleChangeStep, setCompilerStepIndex, submitCount, setSubmitCount } = props;
   const toastMessage = useSnackbar();
-  const { t } = useTranslation();
+  const { t } = useT();
   const { flow } = useFlowStore();
   const { data, refresh: refreshSession, setData } = useSession();
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -64,7 +66,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   }, []);
 
   const onSubmit = async () => {
-    if (submitCount > 0 && isDirty) {
+    if (submitCount > 0 && isDirty && flow) {
       showConfirmation(
         t('step:input_handler.confirmation.title'),
         t('step:input_handler.confirmation.message'),
@@ -72,7 +74,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
         t('step:input_handler.confirmation.dismiss_label'),
         'info'
       ).then(async (confirm: boolean) => {
-        if (confirm) {
+        if (confirm && data?.id) {
           setIsSaving(true);
           await deleteSession(data.id)
             .then(() => {
@@ -91,7 +93,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
           handleChangeStep(currentStep + 1);
         }
       });
-    } else if (isDirty) {
+    } else if (isDirty && flow) {
       setIsSaving(true);
       await createSession(flow.id, flow.version).then((res) => {
         setData(res);
@@ -126,7 +128,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
   const handleRemoveUpload = (field, index: number) => {
     const fieldAttachments = getValues(field);
     fieldAttachments.splice(index, 1);
-    setValue(field, fieldAttachments);
+    setValue(field, fieldAttachments, { shouldDirty: true, shouldValidate: true });
   };
 
   return (
@@ -178,14 +180,19 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
                       ) ?
                         <div className="h-[116px] mb-16">
                           <FileUpload.Field
-                            {...register(`attachmentInput.${input.id}`, { required: !input.optional })}
+                            {...register(`attachmentInput.${input.id}`, {
+                              validate: (value) => {
+                                const files = value ?? getValues(`attachmentInput.${input.id}`) ?? [];
+                                return input.optional || files.length > 0;
+                              },
+                            })}
                             name={`attachmentInput.${input.id}`}
                             variant="horizontal"
                             maxFileSizeMB={25}
                             invalid={false}
                             data-cy={input.id}
                             allowMultiple={input.multipleValued}
-                            appendFiles={attachmentInput[input.id]}
+                            appendFiles={attachmentInput?.[input.id] ?? []}
                           />
                         </div>
                       : null}
@@ -221,7 +228,7 @@ export const InputHandler: React.FC<InputHandlerProps> = (props) => {
               variant="primary"
               onClick={handleSubmit(onSubmit)}
               color="vattjom"
-              rightIcon={currentStep === 3 ? null : <ArrowRight />}
+              rightIcon={currentStep === 3 ? undefined : <ArrowRight />}
               loading={isSaving}
               data-cy="generate"
             >

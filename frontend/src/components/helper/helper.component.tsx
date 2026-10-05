@@ -1,6 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Button, Modal } from '@sk-web-gui/react';
-import { useTranslation } from 'next-i18next';
+import { useT } from 'next-i18next/client';
 
 interface HelperProps {
   currentStep: number;
@@ -8,7 +10,7 @@ interface HelperProps {
 
 export const Helper: React.FC<HelperProps> = (props) => {
   const { currentStep } = props;
-  const { t } = useTranslation();
+  const { t } = useT();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
