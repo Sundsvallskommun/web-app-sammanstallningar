@@ -48,8 +48,7 @@ import { HttpException } from '@exceptions/HttpException';
 import { Profile } from '@interfaces/profile.interface';
 import { User } from '@interfaces/users.interface';
 import { additionalConverters } from '@utils/custom-validation-classes';
-import { isValidOrigin } from '@utils/isValidOrigin';
-import { isValidUrl } from '@utils/util';
+import { getAllowedRedirectUrl } from '@utils/isValidOrigin';
 import rateLimit from 'express-rate-limit';
 
 const corsWhitelist = ORIGIN?.split(',');
@@ -262,14 +261,8 @@ class App {
         next();
       },
       (req, res, next) => {
-        let successRedirect = SAML_LOGOUT_REDIRECT ?? '/';
-        if (
-          typeof req.query.successRedirect === 'string' &&
-          isValidUrl(req.query.successRedirect) &&
-          isValidOrigin(req.query.successRedirect)
-        ) {
-          successRedirect = req.query.successRedirect;
-        }
+        const successRedirect =
+          getAllowedRedirectUrl(req.query.successRedirect)?.toString() ?? SAML_LOGOUT_REDIRECT ?? '/';
 
         samlStrategy.logout(req as any, () => {
           req.logout(err => {
@@ -292,23 +285,11 @@ class App {
             return next(err);
           }
 
-          let successRedirect: URL, failureRedirect: URL;
           const relayState = (req.body as { RelayState?: string } | undefined)?.RelayState ?? '';
-          const urls = relayState.split(',');
-          const primary = urls[0] ?? '';
-          const secondary = urls[1] ?? '';
+          const [primary, secondary] = relayState.split(',');
 
-          if (isValidUrl(primary) && isValidOrigin(primary)) {
-            successRedirect = new URL(primary);
-          } else {
-            successRedirect = new URL(SAML_LOGOUT_REDIRECT ?? '/');
-          }
-
-          if (isValidUrl(secondary) && isValidOrigin(secondary)) {
-            failureRedirect = new URL(secondary);
-          } else {
-            failureRedirect = successRedirect;
-          }
+          const successRedirect = getAllowedRedirectUrl(primary) ?? new URL(SAML_LOGOUT_REDIRECT ?? '/');
+          const failureRedirect = getAllowedRedirectUrl(secondary) ?? new URL(successRedirect);
 
           const queries = new URLSearchParams(failureRedirect.searchParams);
 
@@ -333,23 +314,11 @@ class App {
       samlLoginRateLimiter,
       bodyParser.urlencoded({ extended: false }),
       (req, res, next) => {
-        let successRedirect: URL, failureRedirect: URL;
-
         const relayState = (req.body as { RelayState?: string } | undefined)?.RelayState ?? '';
-        const urls = relayState.split(',');
-        const primary = urls[0] ?? '';
-        const secondary = urls[1] ?? '';
+        const [primary, secondary] = relayState.split(',');
 
-        if (isValidUrl(primary) && isValidOrigin(primary)) {
-          successRedirect = new URL(primary);
-        } else {
-          successRedirect = new URL(SAML_SUCCESS_REDIRECT ?? '');
-        }
-        if (isValidUrl(secondary) && isValidOrigin(secondary)) {
-          failureRedirect = new URL(secondary);
-        } else {
-          failureRedirect = successRedirect;
-        }
+        const successRedirect = getAllowedRedirectUrl(primary) ?? new URL(SAML_SUCCESS_REDIRECT ?? '');
+        const failureRedirect = getAllowedRedirectUrl(secondary) ?? new URL(successRedirect);
 
         passport.authenticate('saml', (err: Error, user: Express.User) => {
           if (err) {
@@ -376,7 +345,7 @@ class App {
                 const failMessage = new URLSearchParams(failureRedirect.searchParams);
                 failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
                 failureRedirect.search = failMessage.toString();
-                res.redirect(failureRedirect.toString());
+                return res.redirect(failureRedirect.toString());
               }
               return res.redirect(successRedirect.toString());
             });
