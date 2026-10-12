@@ -3,7 +3,7 @@
 # =====================
 # Red Hat UBI image: runs as UID 1001 in group 0, which is what OpenShift's restricted SCC expects.
 # Node 22 is required by Next 16.2 and sharp 0.35 (Node 20 is end of life).
-FROM registry.access.redhat.com/ubi9/nodejs-22 AS deps
+FROM registry.access.redhat.com/ubi9/nodejs-22:1 AS deps
 
 WORKDIR /app
 COPY --chown=1001:0 package.json yarn.lock ./
@@ -17,7 +17,7 @@ RUN npm install -g --ignore-scripts yarn@1.22.22 \
 # =====================
 # Build
 # =====================
-FROM registry.access.redhat.com/ubi9/nodejs-22 AS builder
+FROM registry.access.redhat.com/ubi9/nodejs-22:1 AS builder
 
 WORKDIR /app
 COPY --from=deps --chown=1001:0 /app/node_modules ./node_modules
@@ -38,7 +38,7 @@ RUN npm install -g --ignore-scripts yarn@1.22.22 \
 # =====================
 # Runtime
 # =====================
-FROM registry.access.redhat.com/ubi9/nodejs-22 AS runner
+FROM registry.access.redhat.com/ubi9/nodejs-22:1 AS runner
 
 WORKDIR /app
 
