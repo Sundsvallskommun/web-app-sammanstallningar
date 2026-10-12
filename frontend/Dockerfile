@@ -8,8 +8,11 @@ FROM registry.access.redhat.com/ubi9/nodejs-22 AS deps
 WORKDIR /app
 COPY --chown=1001:0 package.json yarn.lock ./
 
-RUN npm install -g yarn \
- && yarn install --frozen-lockfile --network-timeout 600000
+# Yarn is pinned and lifecycle scripts are disabled: nothing in this project needs an install
+# script (sharp ships prebuilt binaries), and it stops dependencies from running arbitrary code
+# or phoning home during the image build.
+RUN npm install -g --ignore-scripts yarn@1.22.22 \
+ && yarn install --frozen-lockfile --ignore-scripts --network-timeout 600000
 
 # =====================
 # Build
@@ -29,7 +32,7 @@ COPY --chown=1001:0 .env-cicd .env
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_OUTPUT=standalone
 
-RUN npm install -g yarn \
+RUN npm install -g --ignore-scripts yarn@1.22.22 \
  && yarn build
 
 # =====================
@@ -45,21 +48,20 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
-COPY --from=builder --chown=1001:0 /app/next.config.js ./
-COPY --from=builder --chown=1001:0 /app/public ./public
-COPY --from=builder --chown=1001:0 /app/package.json ./
+# Static, never written at runtime: left root-owned and read-only for the app user.
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./
 
-# Next standalone output (includes its own pruned node_modules and server.js)
+# Next standalone output (includes its own pruned node_modules and server.js).
+# These must be writable by group 0: entrypoint.sh rewrites the inlined NEXT_PUBLIC_* placeholders
+# in .next at container start, and the image optimizer writes to .next/cache. OpenShift runs the
+# container as an arbitrary UID in group 0, so group write is the only way to allow that.
 COPY --from=builder --chown=1001:0 /app/.next/standalone ./
 COPY --from=builder --chown=1001:0 /app/.next/static ./.next/static
-
-# OpenShift runs with an arbitrary UID in group 0: entrypoint.sh rewrites files under .next and
-# the image optimizer writes to .next/cache, so the group needs write access.
 RUN chmod -R g+w /app/.next
 
-COPY --chown=1001:0 entrypoint.sh ./
-RUN sed -i 's/\r$//' ./entrypoint.sh \
- && chmod 0555 ./entrypoint.sh
+# Root-owned and read-only; line endings are enforced by .gitattributes.
+COPY --chmod=0555 entrypoint.sh ./
 
 USER 1001
 

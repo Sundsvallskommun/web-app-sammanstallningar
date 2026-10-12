@@ -7,8 +7,10 @@ FROM registry.access.redhat.com/ubi9/nodejs-22 AS deps
 WORKDIR /app
 COPY --chown=1001:0 package.json yarn.lock ./
 
-RUN npm install -g yarn \
- && yarn install --frozen-lockfile --network-timeout 600000
+# Yarn is pinned and lifecycle scripts are disabled: nothing in this project needs an install
+# script, and it stops dependencies from running arbitrary code or phoning home during the build.
+RUN npm install -g --ignore-scripts yarn@1.22.22 \
+ && yarn install --frozen-lockfile --ignore-scripts --network-timeout 600000
 
 # =====================
 # Build
@@ -20,7 +22,7 @@ COPY --from=deps --chown=1001:0 /app/node_modules ./node_modules
 COPY --chown=1001:0 . .
 
 # tsc + tsc-alias. A failing build must fail the image build.
-RUN npm install -g yarn \
+RUN npm install -g --ignore-scripts yarn@1.22.22 \
  && yarn build
 
 # Keep only production dependencies for the runtime image.
@@ -37,14 +39,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-COPY --from=builder --chown=1001:0 /app/package.json ./
-COPY --from=builder --chown=1001:0 /app/node_modules ./node_modules
-COPY --from=builder --chown=1001:0 /app/dist ./dist
-
-# The app writes sessions, logs and its database under /app/data at startup. OpenShift runs with an
-# arbitrary UID in group 0, so the directory must be group-writable (or mounted as a volume).
-RUN mkdir -p /app/data \
- && chmod -R g=u /app/data
+# Application files are never written at runtime: left root-owned and read-only for the app user.
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
 
 USER 1001
 
