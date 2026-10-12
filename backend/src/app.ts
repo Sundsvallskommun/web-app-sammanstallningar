@@ -44,11 +44,12 @@ import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import createFileStore from 'session-file-store';
 import swaggerUi from 'swagger-ui-express';
-import { HttpException } from './exceptions/HttpException';
-import { Profile } from './interfaces/profile.interface';
-import { User } from './interfaces/users.interface';
-import { additionalConverters } from './utils/custom-validation-classes';
-import { isValidUrl } from './utils/util';
+import { HttpException } from '@exceptions/HttpException';
+import { Profile } from '@interfaces/profile.interface';
+import { User } from '@interfaces/users.interface';
+import { additionalConverters } from '@utils/custom-validation-classes';
+import { isValidOrigin } from '@utils/isValidOrigin';
+import { isValidUrl } from '@utils/util';
 import rateLimit from 'express-rate-limit';
 
 const corsWhitelist = ORIGIN?.split(',');
@@ -218,14 +219,18 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/login`,
-      (req, res, next) => {
+      (req, _res, next) => {
+        let relayState = '';
         if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+          relayState = req.session.returnTo;
+        } else if (typeof req.query.successRedirect === 'string') {
+          relayState = req.query.successRedirect;
         }
-        if (req.query.failureRedirect) {
-          req.query.RelayState = `${req.query.RelayState},${req.query.failureRedirect}`;
+        if (typeof req.query.failureRedirect === 'string') {
+          relayState = `${relayState},${req.query.failureRedirect}`;
+        }
+        if (relayState) {
+          req.body = { ...(req.body as Record<string, unknown> | undefined), RelayState: relayState };
         }
         next();
       },
@@ -244,22 +249,34 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/logout`,
-      (req, res, next) => {
+      (req, _res, next) => {
+        let relayState = '';
         if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+          relayState = req.session.returnTo;
+        } else if (typeof req.query.successRedirect === 'string') {
+          relayState = req.query.successRedirect;
+        }
+        if (relayState) {
+          req.body = { ...(req.body as Record<string, unknown> | undefined), RelayState: relayState };
         }
         next();
       },
       (req, res, next) => {
-        const successRedirect = req.query.successRedirect;
+        let successRedirect = SAML_LOGOUT_REDIRECT ?? '/';
+        if (
+          typeof req.query.successRedirect === 'string' &&
+          isValidUrl(req.query.successRedirect) &&
+          isValidOrigin(req.query.successRedirect)
+        ) {
+          successRedirect = req.query.successRedirect;
+        }
+
         samlStrategy.logout(req as any, () => {
           req.logout(err => {
             if (err) {
               return next(err);
             }
-            res.redirect(successRedirect as string);
+            res.redirect(successRedirect);
           });
         });
       },
@@ -276,27 +293,31 @@ class App {
           }
 
           let successRedirect: URL, failureRedirect: URL;
-          const urls = String(req?.body?.RelayState ?? req?.query?.RelayState ?? '').split(',');
+          const relayState = (req.body as { RelayState?: string } | undefined)?.RelayState ?? '';
+          const urls = relayState.split(',');
+          const primary = urls[0] ?? '';
+          const secondary = urls[1] ?? '';
 
-          if (isValidUrl(urls[0])) {
-            successRedirect = new URL(urls[0]);
+          if (isValidUrl(primary) && isValidOrigin(primary)) {
+            successRedirect = new URL(primary);
           } else {
             successRedirect = new URL(SAML_LOGOUT_REDIRECT ?? '/');
           }
 
-          if (isValidUrl(urls[1])) {
-            failureRedirect = new URL(urls[1]);
+          if (isValidUrl(secondary) && isValidOrigin(secondary)) {
+            failureRedirect = new URL(secondary);
           } else {
             failureRedirect = successRedirect;
           }
 
           const queries = new URLSearchParams(failureRedirect.searchParams);
 
-          if (req.session.messages?.length > 0) {
+          if (req.session?.messages?.length > 0) {
             queries.append('failMessage', req.session.messages[0]);
           } else {
             queries.append('failMessage', 'SAML_UNKNOWN_ERROR');
           }
+          failureRedirect.search = queries.toString();
 
           if (failureRedirect) {
             res.redirect(failureRedirect.toString());
@@ -314,15 +335,18 @@ class App {
       (req, res, next) => {
         let successRedirect: URL, failureRedirect: URL;
 
-        const urls = String(req?.body?.RelayState ?? req?.query?.RelayState ?? '').split(',');
+        const relayState = (req.body as { RelayState?: string } | undefined)?.RelayState ?? '';
+        const urls = relayState.split(',');
+        const primary = urls[0] ?? '';
+        const secondary = urls[1] ?? '';
 
-        if (isValidUrl(urls[0])) {
-          successRedirect = new URL(urls[0]);
+        if (isValidUrl(primary) && isValidOrigin(primary)) {
+          successRedirect = new URL(primary);
         } else {
           successRedirect = new URL(SAML_SUCCESS_REDIRECT ?? '');
         }
-        if (isValidUrl(urls[1])) {
-          failureRedirect = new URL(urls[1]);
+        if (isValidUrl(secondary) && isValidOrigin(secondary)) {
+          failureRedirect = new URL(secondary);
         } else {
           failureRedirect = successRedirect;
         }
