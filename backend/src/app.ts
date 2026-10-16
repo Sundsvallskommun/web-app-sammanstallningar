@@ -45,6 +45,7 @@ import swaggerUi from 'swagger-ui-express';
 import { HttpException } from '@exceptions/HttpException';
 import { Profile } from '@interfaces/profile.interface';
 import { User } from '@interfaces/users.interface';
+import { livenessHandler } from '@/routes/liveness.route';
 import { createSessionStore } from '@utils/createSessionStore';
 import { additionalConverters } from '@utils/custom-validation-classes';
 import { getAllowedRedirectUrl } from '@utils/isValidOrigin';
@@ -154,6 +155,7 @@ class App {
     // When SESSION_STORE=redis, server.ts must have awaited initRedis() before constructing App.
     this.sessionStore = createSessionStore(SESSION_TTL);
 
+    this.initializeLivenessRoute();
     this.initializeMiddlewares();
     this.initializeRoutes(Controllers);
     if (this.swaggerEnabled) {
@@ -173,6 +175,10 @@ class App {
 
   public getServer() {
     return this.app;
+  }
+
+  private initializeLivenessRoute() {
+    this.app.get('/health', livenessHandler);
   }
 
   private initializeMiddlewares() {
