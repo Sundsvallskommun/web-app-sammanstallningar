@@ -2,7 +2,7 @@
 # Dependencies
 # =====================
 # Red Hat UBI image: runs as UID 1001 in group 0, which is what OpenShift's restricted SCC expects.
-FROM registry.access.redhat.com/ubi9/nodejs-22:1 AS deps
+FROM node:22-slim AS deps
 
 WORKDIR /app
 COPY --chown=1001:0 package.json yarn.lock ./
@@ -15,7 +15,7 @@ RUN npm install -g --ignore-scripts yarn@1.22.22 \
 # =====================
 # Build
 # =====================
-FROM registry.access.redhat.com/ubi9/nodejs-22:1 AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
 COPY --from=deps --chown=1001:0 /app/node_modules ./node_modules
@@ -32,7 +32,7 @@ RUN rm -rf node_modules \
 # =====================
 # Runtime
 # =====================
-FROM registry.access.redhat.com/ubi9/nodejs-22:1 AS runner
+FROM node:22-slim AS runner
 
 WORKDIR /app
 
