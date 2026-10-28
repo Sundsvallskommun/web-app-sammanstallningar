@@ -17,7 +17,7 @@ import {
   SAML_PUBLIC_KEY,
   SAML_SUCCESS_REDIRECT,
   SECRET_KEY,
-  SESSION_MEMORY,
+  SESSION_STORE,
   SWAGGER_ENABLED,
 } from '@config';
 import errorMiddleware from '@middlewares/error.middleware';
@@ -35,30 +35,26 @@ import session from 'express-session';
 import { existsSync, mkdirSync } from 'fs';
 import helmet from 'helmet';
 import hpp from 'hpp';
-import createMemoryStore from 'memorystore';
 import morgan from 'morgan';
 import passport from 'passport';
 import { join } from 'path';
 import 'reflect-metadata';
 import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
-import createFileStore from 'session-file-store';
 import swaggerUi from 'swagger-ui-express';
-import { HttpException } from './exceptions/HttpException';
-import { Profile } from './interfaces/profile.interface';
-import { User } from './interfaces/users.interface';
-import { additionalConverters } from './utils/custom-validation-classes';
-import { isValidUrl } from './utils/util';
+import { HttpException } from '@exceptions/HttpException';
+import { Profile } from '@interfaces/profile.interface';
+import { User } from '@interfaces/users.interface';
+import { livenessHandler } from '@/routes/liveness.route';
+import { createSessionStore } from '@utils/createSessionStore';
+import { additionalConverters } from '@utils/custom-validation-classes';
+import { getAllowedRedirectUrl } from '@utils/isValidOrigin';
 import rateLimit from 'express-rate-limit';
 
 const corsWhitelist = ORIGIN?.split(',');
 
-const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
-const sessionTTL = 4 * 24 * 60 * 60;
-// NOTE: memory uses ms while file uses seconds
-const sessionStore = new SessionStoreCreate(
-  SESSION_MEMORY ? { checkPeriod: sessionTTL * 1000 } : { ttl: sessionTTL, path: './data/sessions' },
-);
+// Session lifetime in seconds (4 days)
+const SESSION_TTL = 4 * 24 * 60 * 60;
 
 // Rate limiter for sensitive endpoints, e.g., SAML login callback
 const samlLoginRateLimiter = rateLimit({
@@ -147,6 +143,7 @@ class App {
   public env: string;
   public port: string | number;
   public swaggerEnabled: boolean;
+  private readonly sessionStore: session.Store;
 
   constructor(Controllers: Function[]) {
     this.app = express();
@@ -155,7 +152,10 @@ class App {
     this.swaggerEnabled = SWAGGER_ENABLED || false;
 
     this.initializeDataFolders();
+    // When SESSION_STORE=redis, server.ts must have awaited initRedis() before constructing App.
+    this.sessionStore = createSessionStore(SESSION_TTL);
 
+    this.initializeLivenessRoute();
     this.initializeMiddlewares();
     this.initializeRoutes(Controllers);
     if (this.swaggerEnabled) {
@@ -177,7 +177,15 @@ class App {
     return this.app;
   }
 
+  private initializeLivenessRoute() {
+    this.app.get('/health', livenessHandler);
+  }
+
   private initializeMiddlewares() {
+    // Behind the OpenShift route TLS is terminated before Express; trust the first proxy hop
+    // so req.secure, req.protocol and secure cookies reflect the client connection.
+    this.app.set('trust proxy', 1);
+
     this.app.use(morgan(LOG_FORMAT ?? 'dev', { stream }));
     this.app.use(hpp());
     this.app.use(helmet());
@@ -191,7 +199,7 @@ class App {
         secret: SECRET_KEY ?? '',
         resave: false,
         saveUninitialized: false,
-        store: sessionStore,
+        store: this.sessionStore,
       }),
     );
 
@@ -218,14 +226,18 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/login`,
-      (req, res, next) => {
+      (req, _res, next) => {
+        let relayState = '';
         if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+          relayState = req.session.returnTo;
+        } else if (typeof req.query.successRedirect === 'string') {
+          relayState = req.query.successRedirect;
         }
-        if (req.query.failureRedirect) {
-          req.query.RelayState = `${req.query.RelayState},${req.query.failureRedirect}`;
+        if (typeof req.query.failureRedirect === 'string') {
+          relayState = `${relayState},${req.query.failureRedirect}`;
+        }
+        if (relayState) {
+          req.body = { ...(req.body as Record<string, unknown> | undefined), RelayState: relayState };
         }
         next();
       },
@@ -244,22 +256,28 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/logout`,
-      (req, res, next) => {
+      (req, _res, next) => {
+        let relayState = '';
         if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+          relayState = req.session.returnTo;
+        } else if (typeof req.query.successRedirect === 'string') {
+          relayState = req.query.successRedirect;
+        }
+        if (relayState) {
+          req.body = { ...(req.body as Record<string, unknown> | undefined), RelayState: relayState };
         }
         next();
       },
       (req, res, next) => {
-        const successRedirect = req.query.successRedirect;
+        const successRedirect =
+          getAllowedRedirectUrl(req.query.successRedirect)?.toString() ?? SAML_LOGOUT_REDIRECT ?? '/';
+
         samlStrategy.logout(req as any, () => {
           req.logout(err => {
             if (err) {
               return next(err);
             }
-            res.redirect(successRedirect as string);
+            res.redirect(successRedirect);
           });
         });
       },
@@ -275,28 +293,20 @@ class App {
             return next(err);
           }
 
-          let successRedirect: URL, failureRedirect: URL;
-          const urls = String(req?.body?.RelayState ?? req?.query?.RelayState ?? '').split(',');
+          const relayState = (req.body as { RelayState?: string } | undefined)?.RelayState ?? '';
+          const [primary, secondary] = relayState.split(',');
 
-          if (isValidUrl(urls[0])) {
-            successRedirect = new URL(urls[0]);
-          } else {
-            successRedirect = new URL(SAML_LOGOUT_REDIRECT ?? '/');
-          }
-
-          if (isValidUrl(urls[1])) {
-            failureRedirect = new URL(urls[1]);
-          } else {
-            failureRedirect = successRedirect;
-          }
+          const successRedirect = getAllowedRedirectUrl(primary) ?? new URL(SAML_LOGOUT_REDIRECT ?? '/');
+          const failureRedirect = getAllowedRedirectUrl(secondary) ?? new URL(successRedirect);
 
           const queries = new URLSearchParams(failureRedirect.searchParams);
 
-          if (req.session.messages?.length > 0) {
+          if (req.session?.messages?.length > 0) {
             queries.append('failMessage', req.session.messages[0]);
           } else {
             queries.append('failMessage', 'SAML_UNKNOWN_ERROR');
           }
+          failureRedirect.search = queries.toString();
 
           if (failureRedirect) {
             res.redirect(failureRedirect.toString());
@@ -312,20 +322,11 @@ class App {
       samlLoginRateLimiter,
       bodyParser.urlencoded({ extended: false }),
       (req, res, next) => {
-        let successRedirect: URL, failureRedirect: URL;
+        const relayState = (req.body as { RelayState?: string } | undefined)?.RelayState ?? '';
+        const [primary, secondary] = relayState.split(',');
 
-        const urls = String(req?.body?.RelayState ?? req?.query?.RelayState ?? '').split(',');
-
-        if (isValidUrl(urls[0])) {
-          successRedirect = new URL(urls[0]);
-        } else {
-          successRedirect = new URL(SAML_SUCCESS_REDIRECT ?? '');
-        }
-        if (isValidUrl(urls[1])) {
-          failureRedirect = new URL(urls[1]);
-        } else {
-          failureRedirect = successRedirect;
-        }
+        const successRedirect = getAllowedRedirectUrl(primary) ?? new URL(SAML_SUCCESS_REDIRECT ?? '');
+        const failureRedirect = getAllowedRedirectUrl(secondary) ?? new URL(successRedirect);
 
         passport.authenticate('saml', (err: Error, user: Express.User) => {
           if (err) {
@@ -352,7 +353,7 @@ class App {
                 const failMessage = new URLSearchParams(failureRedirect.searchParams);
                 failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
                 failureRedirect.search = failMessage.toString();
-                res.redirect(failureRedirect.toString());
+                return res.redirect(failureRedirect.toString());
               }
               return res.redirect(successRedirect.toString());
             });
@@ -411,17 +412,17 @@ class App {
   }
 
   private initializeDataFolders() {
-    const databaseDir: string = join(__dirname, '../data/database');
-    if (!existsSync(databaseDir)) {
-      mkdirSync(databaseDir, { recursive: true });
-    }
     const logsDir: string = join(__dirname, '../data/logs');
     if (!existsSync(logsDir)) {
       mkdirSync(logsDir, { recursive: true });
     }
-    const sessionsDir: string = join(__dirname, '../data/sessions');
-    if (!existsSync(sessionsDir)) {
-      mkdirSync(sessionsDir, { recursive: true });
+
+    // Only the file-based session store needs local disk. Redis/memory keep the pod stateless.
+    if (SESSION_STORE === 'file') {
+      const sessionsDir: string = join(__dirname, '../data/sessions');
+      if (!existsSync(sessionsDir)) {
+        mkdirSync(sessionsDir, { recursive: true });
+      }
     }
   }
 }
